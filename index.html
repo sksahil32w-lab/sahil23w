@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Tic Tac Toe - Roasting AI</title>
+<style>
+  * {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+  }
+
+  body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background: radial-gradient(circle at top, #0f2027, #203a43, #2c5364);
+    color: #fff;
+    font-family: 'Poppins', sans-serif;
+    margin: 0;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  h1 {
+    text-align: center;
+    margin-bottom: 10px;
+    font-size: 8vw;
+    text-shadow: 0 0 20px #00f0ff;
+    animation: glow 2s infinite alternate;
+  }
+
+  @keyframes glow {
+    from { text-shadow: 0 0 10px #00f0ff; }
+    to { text-shadow: 0 0 25px #00f0ff, 0 0 50px #00f0ff; }
+  }
+
+  .board {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(80px, 25vw));
+    grid-template-rows: repeat(3, minmax(80px, 25vw));
+    gap: 10px;
+    justify-content: center;
+  }
+
+  .cell {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 10vw;
+    background: rgba(255, 255, 255, 0.1);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border-radius: 15px;
+    box-shadow: 0 0 10px #00f0ff33;
+  }
+
+  .cell:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.05);
+  }
+
+  .cell.X {
+    color: #00f0ff;
+    text-shadow: 0 0 15px #00f0ff;
+  }
+
+  .cell.O {
+    color: #ff005c;
+    text-shadow: 0 0 15px #ff005c;
+  }
+
+  .message {
+    margin-top: 10px;
+    text-align: center;
+    font-size: 5vw;
+    min-height: 1.5em;
+  }
+
+  .botTalk {
+    margin-top: 10px;
+    font-size: 4.5vw;
+    color: #ffeb3b;
+    text-align: center;
+    min-height: 2em;
+  }
+
+  .timer {
+    margin-top: 10px;
+    font-size: 4vw;
+    color: #00ff9d;
+  }
+
+  button {
+    margin-top: 15px;
+    padding: 12px 25px;
+    font-size: 4.5vw;
+    cursor: pointer;
+    border: none;
+    border-radius: 10px;
+    background: linear-gradient(90deg, #00f0ff, #ff00a6);
+    color: #fff;
+    transition: transform 0.3s, box-shadow 0.3s;
+  }
+
+  button:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 20px #ff00a6;
+  }
+
+  @media (max-width: 480px) {
+    h1 { font-size: 10vw; }
+    .board {
+      grid-template-columns: repeat(3, 28vw);
+      grid-template-rows: repeat(3, 28vw);
+    }
+    .cell { font-size: 12vw; }
+    button { font-size: 5vw; padding: 10px 20px; }
+  }
+</style>
+</head>
+<body>
+  <h1>Tic Tac Toe</h1>
+  <div class="board" id="board"></div>
+  <div class="message" id="message"></div>
+  <div class="timer" id="timer"></div>
+  <div class="botTalk" id="botTalk"></div>
+  <button onclick="startGame()">Restart Game</button>
+
+<script>
+  const boardElement = document.getElementById('board');
+  const messageElement = document.getElementById('message');
+  const botTalkElement = document.getElementById('botTalk');
+  const timerElement = document.getElementById('timer');
+  let board = Array(9).fill(null);
+  const human = 'X';
+  const ai = 'O';
+  let playerTurn = true;
+  let lastMoveTime = 0;
+  let countdown;
+  let timeLeft = 60;
+
+  const generalRoasts = [
+    "Bhai ye move to kindergarten level ka tha.",
+    "AI bhi soch raha hai ye kya ho gaya.",
+    "Kuch zyada hi easy game mil gaya mujhe.",
+    "Arre yaar thoda dimaag laga le.",
+    "Main to sochta tha insaan smart hote hain.",
+    "Aise khelega to jeetne ka sapna reh jaayega.",
+    "Tu AI ko underestimate kar gaya dost.",
+    "Bohot confidence hai bhai par skills kidhar hai.",
+    "Ek aur move aur main tera tutorial bana dunga.",
+    "Tu to khud hi mere points bada raha hai bro."
+  ];
+
+  const sahilRoasts = [
+    "Arre Sahil bhai sahi keh raha tha tu to noob hai.",
+    "Sahil bola tha AI se mat khel, ab bhugto.",
+    "Sahil ne bola tha tu haar jaayega, aur dekh kya ho gaya.",
+    "Lagta hai Sahil ne tujhe training nahi di."
+  ];
+
+  function startGame() {
+    board = Array(9).fill(null);
+    messageElement.textContent = '';
+    botTalkElement.textContent = '';
+    playerTurn = true;
+    renderBoard();
+    startTimer();
+  }
+
+  function renderBoard() {
+    boardElement.innerHTML = '';
+    board.forEach((cell, index) => {
+      const cellElement = document.createElement('div');
+      cellElement.classList.add('cell');
+      cellElement.textContent = cell;
+      cellElement.classList.add(cell);
+      cellElement.addEventListener('click', () => humanMove(index));
+      boardElement.appendChild(cellElement);
+    });
+  }
+
+  function humanMove(index) {
+    const now = Date.now();
+    if (now - lastMoveTime < 3000 || !playerTurn) return; // 3s cooldown
+    if (!board[index] && !checkWinner(board)) {
+      board[index] = human;
+      lastMoveTime = now;
+      playerTurn = false;
+      renderBoard();
+      const winner = checkWinner(board);
+      if (winner) return endGame(winner);
+      resetTimer();
+      setTimeout(() => {
+        aiMove();
+        renderBoard();
+        const finalWinner = checkWinner(board);
+        if (finalWinner) endGame(finalWinner);
+        else {
+          playerTurn = true;
+          resetTimer();
+        }
+      }, 1000);
+    }
+  }
+
+  function aiMove() {
+    let bestScore = -Infinity;
+    let move;
+    for (let i = 0; i < 9; i++) {
+      if (!board[i]) {
+        board[i] = ai;
+        let score = minimax(board, 0, false);
+        board[i] = null;
+        if (score > bestScore) {
+          bestScore = score;
+          move = i;
+        }
+      }
+    }
+    if (move !== undefined) board[move] = ai;
+    showRoast();
+  }
+
+  function minimax(board, depth, isMaximizing) {
+    const winner = checkWinner(board);
+    if (winner === ai) return 10 - depth;
+    if (winner === human) return depth - 10;
+    if (!board.includes(null)) return 0;
+
+    if (isMaximizing) {
+      let bestScore = -Infinity;
+      for (let i = 0; i < 9; i++) {
+        if (!board[i]) {
+          board[i] = ai;
+          let score = minimax(board, depth + 1, false);
+          board[i] = null;
+          bestScore = Math.max(score, bestScore);
+        }
+      }
+      return bestScore;
+    } else {
+      let bestScore = Infinity;
+      for (let i = 0; i < 9; i++) {
+        if (!board[i]) {
+          board[i] = human;
+          let score = minimax(board, depth + 1, true);
+          board[i] = null;
+          bestScore = Math.min(score, bestScore);
+        }
+      }
+      return bestScore;
+    }
+  }
+
+  function checkWinner(board) {
+    const winPatterns = [
+      [0,1,2],[3,4,5],[6,7,8],
+      [0,3,6],[1,4,7],[2,5,8],
+      [0,4,8],[2,4,6]
+    ];
+    for (const [a,b,c] of winPatterns) {
+      if (board[a] && board[a] === board[b] && board[a] === board[c]) return board[a];
+    }
+    if (!board.includes(null)) return 'tie';
+    return null;
+  }
+
+  function endGame(winner) {
+    clearInterval(countdown);
+    playerTurn = false;
+    if (winner === 'tie') {
+      messageElement.textContent = "Match Drawn";
+      speak("Lagta hai thoda dum hai");
+    } else if (winner === human) {
+      messageElement.textContent = "You Win";
+      speak("Ha ha galti se jeet gaya bas");
+    } else {
+      messageElement.textContent = "AI Wins";
+      speak("Tu to har gaya noobda");
+    }
+  }
+
+  function showRoast() {
+    let text;
+    if (Math.random() < 0.3) {
+      text = sahilRoasts[Math.floor(Math.random() * sahilRoasts.length)];
+    } else {
+      text = generalRoasts[Math.floor(Math.random() * generalRoasts.length)];
+    }
+    botTalkElement.textContent = '';
+    typeEffect(botTalkElement, text);
+    speak(text);
+  }
+
+  function typeEffect(element, text, i = 0) {
+    if (i < text.length) {
+      element.textContent += text.charAt(i);
+      setTimeout(() => typeEffect(element, text, i + 1), 40);
+    }
+  }
+
+  function speak(text) {
+    window.speechSynthesis.cancel();
+    const msg = new SpeechSynthesisUtterance(text);
+    msg.lang = 'en-IN';
+    msg.rate = 1.05;
+    msg.pitch = 1;
+    msg.volume = 1;
+    window.speechSynthesis.speak(msg);
+  }
+
+  function startTimer() {
+    clearInterval(countdown);
+    timeLeft = 60;
+    timerElement.textContent = `Time left: ${timeLeft}s`;
+    countdown = setInterval(() => {
+      timeLeft--;
+      timerElement.textContent = `Time left: ${timeLeft}s`;
+      if (timeLeft <= 0) {
+        clearInterval(countdown);
+        playerTurn = false;
+        board = Array(9).fill(null);
+        messageElement.textContent = "Time Over";
+        speak("Kya hua So gaya kya");
+      }
+    }, 1000);
+  }
+
+  function resetTimer() {
+    clearInterval(countdown);
+    startTimer();
+  }
+
+  startGame();
+</script>
+</body>
+</html>
