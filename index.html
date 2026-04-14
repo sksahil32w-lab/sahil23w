@@ -35,8 +35,8 @@
     <script type="importmap">
         {
             "imports": {
-                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
-                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+                "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
             }
         }
     </script>
@@ -113,6 +113,8 @@
         import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
         import { SSAOPass } from 'three/addons/postprocessing/SSAOPass.js'; 
         import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+        import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
+        import { FXAAShader } from 'three/addons/shaders/FXAAShader.js';
         import { TransformControls } from 'three/addons/controls/TransformControls.js';
 
         // --- CONFIG ---
@@ -135,12 +137,11 @@
         let isGameReady = false;
 
         // Perf state (default: ON)
-        // --- PERF: toggle this to reduce expensive features for low GPU ---
         let performanceMode = true;
-        let shadowsEnabled = false; // will be disabled in perf mode by default
+        let shadowsEnabled = false; 
         let composerEnabled = true;
         let envMapTexture = null;
-        let ssaoPass = null, bloomPass = null;
+        let ssaoPass = null, bloomPass = null, fxaaPass = null;
 
         // Editor & physics
         let isEditMode = false;
@@ -176,43 +177,46 @@
         animate();
 
         function init() {
-            // --- PERF: renderer tweaks for low GPU ---
-            renderer = new THREE.WebGLRenderer({ antialias: false, powerPreference: "high-performance" }); // antialias off for perf
-            // limit pixel ratio to 1 on low GPU to save VRAM / fill rate
-            renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1));
+            // --- HIGH FIDELITY RENDERER SETUP ---
+            renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" }); 
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2)); // Up to 2x for sharp edges
             renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.shadowMap.enabled = true; // may be turned off by applyPerformanceSettings()
-            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-            renderer.physicallyCorrectLights = true;
+            renderer.shadowMap.enabled = true; 
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap; // Soft shadows
             renderer.outputColorSpace = THREE.SRGBColorSpace;
-            renderer.toneMapping = THREE.ACESFilmicToneMapping;
-            renderer.toneMappingExposure = 1.0;
+            renderer.toneMapping = THREE.ACESFilmicToneMapping; // Cinematic Tone Mapping
+            renderer.toneMappingExposure = 1.2; // Slightly brighter, vibrant exposure
             document.body.appendChild(renderer.domElement);
-            // --- end renderer tweaks ---
 
             scene = new THREE.Scene();
-            scene.background = new THREE.Color(0x87CEEB);
-            scene.fog = new THREE.Fog(0xa0cdfa, 20, 300);
+            scene.background = new THREE.Color(0x8cb6d9);
+            // AAA: Exponential fog for atmospheric depth scattering
+            scene.fog = new THREE.FogExp2(0x8cb6d9, 0.0015);
             clock = new THREE.Clock();
 
             camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 2000);
 
-            // LIGHTING
-            const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 0.6);
+            // LIGHTING (Upgraded for Realistic GTA-V Style)
+            // Hemisphere matches sky scattering and ground bounce
+            const hemiLight = new THREE.HemisphereLight(0xddeeff, 0x2f3525, 0.45);
             hemiLight.position.set(0, 50, 0);
             scene.add(hemiLight);
 
-            const sunLight = new THREE.DirectionalLight(0xffffff, 1.6);
+            // Warm, intense physical sun
+            const sunLight = new THREE.DirectionalLight(0xfff5e6, 3.5);
             sunLight.position.set(100, 200, 100);
             sunLight.castShadow = true;
-            // --- PERF: reduced shadow map size for performance ---
-            sunLight.shadow.mapSize.set(1024, 1024);
-            sunLight.shadow.camera.left = -150; sunLight.shadow.camera.right = 150;
-            sunLight.shadow.camera.top = 150; sunLight.shadow.camera.bottom = -150;
-            sunLight.shadow.bias = -0.0005;
+            
+            // High-res AAA shadow mapping
+            sunLight.shadow.mapSize.set(2048, 2048); 
+            sunLight.shadow.camera.left = -250; sunLight.shadow.camera.right = 250;
+            sunLight.shadow.camera.top = 250; sunLight.shadow.camera.bottom = -250;
+            sunLight.shadow.camera.near = 0.5; sunLight.shadow.camera.far = 1000;
+            sunLight.shadow.bias = -0.0001;
+            sunLight.shadow.normalBias = 0.05; // Eliminates shadow acne on models
             scene.add(sunLight);
 
-            // PMREM for HDR (may be disabled in perf mode)
+            // PMREM for HDR Reflections
             pmremGenerator = new THREE.PMREMGenerator(renderer);
             pmremGenerator.compileEquirectangularShader();
 
@@ -223,7 +227,6 @@
                         scene.environment = envMapTexture;
                         scene.background = envMapTexture;
                     } else {
-                        // in perf mode keep simple color background
                         scene.environment = null;
                     }
                 } catch (e) {
@@ -238,10 +241,9 @@
             transformControl = new TransformControls(camera, renderer.domElement);
             scene.add(transformControl);
 
-            // axis helpers
             createAxisHelpers(5);
 
-            // LOAD MAP
+            // LOAD MAP (With Material Enhancements)
             const mapLoader = new GLTFLoader();
             mapLoader.load('map.glb', (gltf) => {
                 const map = gltf.scene;
@@ -251,46 +253,50 @@
 
                 map.traverse((child) => {
                     if (child.isMesh) {
-                        // --- PERF: avoid many shadow-casting meshes on low GPU ---
                         child.castShadow = !performanceMode && shadowsEnabled;
                         child.receiveShadow = true;
                         collidableMeshList.push(child);
 
                         if (child.material) {
-                            child.material.metalness = 0.3;
-                            child.material.roughness = performanceMode ? Math.max(0.45, child.material.roughness || 0.45) : (child.material.roughness || 0.4);
-                            child.material.envMapIntensity = (child.material.envMapIntensity !== undefined) ? child.material.envMapIntensity : (performanceMode ? 0.8 : 1.0);
+                            // AAA PBR Enhancements: More reactive to HDR environment
+                            child.material.metalness = child.material.metalness !== undefined ? child.material.metalness : 0.1;
+                            child.material.roughness = performanceMode ? 0.6 : (child.material.roughness || 0.4);
+                            // Boost reflections intensely when perf mode off
+                            child.material.envMapIntensity = performanceMode ? 0.8 : 2.5; 
                             child.material.side = THREE.FrontSide;
-                            child.material.needsUpdate = true;
+                            
+                            if(child.material.isMeshStandardMaterial) {
+                                child.material.needsUpdate = true;
+                            }
                         }
                     }
                 });
                 scene.add(map);
 
-                // --- INTERIOR LIGHTS (kept but adjusted) ---
+                // --- INTERIOR LIGHTS ---
                 try {
                     const bbox = new THREE.Box3().setFromObject(map);
                     const center = bbox.getCenter(new THREE.Vector3());
                     const size = bbox.getSize(new THREE.Vector3());
 
-                    const roomLight = new THREE.PointLight(0xffffff, performanceMode ? 1.6 : 2.5, Math.max(20, Math.max(size.x, size.z) * 1.5));
+                    const roomLight = new THREE.PointLight(0xfff0dd, performanceMode ? 2.0 : 4.0, Math.max(20, Math.max(size.x, size.z) * 1.5));
                     roomLight.position.copy(center).add(new THREE.Vector3(0, Math.max(4, size.y * 0.5), 0));
-                    roomLight.castShadow = false; // keep false for perf
+                    roomLight.castShadow = false;
                     roomLight.name = "Interior_RoomLight";
                     scene.add(roomLight);
 
-                    const ambientLight = new THREE.AmbientLight(0xffffff, performanceMode ? 0.45 : 0.55);
+                    const ambientLight = new THREE.AmbientLight(0xffffff, performanceMode ? 0.45 : 0.3);
                     ambientLight.name = "Interior_Ambient";
                     scene.add(ambientLight);
 
-                    const windowLight1 = new THREE.SpotLight(0xffffff, performanceMode ? 1.0 : 2.0, Math.max(20, size.length()), Math.PI / 6, 0.4, 1);
+                    const windowLight1 = new THREE.SpotLight(0xffeedd, performanceMode ? 1.0 : 3.0, Math.max(20, size.length()), Math.PI / 6, 0.4, 1);
                     windowLight1.position.copy(center).add(new THREE.Vector3(size.x * 0.5 + 1, Math.max(6, size.y * 0.6), 0));
                     windowLight1.target.position.copy(center);
                     windowLight1.castShadow = false;
                     scene.add(windowLight1);
                     scene.add(windowLight1.target);
 
-                    const windowLight2 = new THREE.SpotLight(0xffffff, performanceMode ? 0.8 : 1.5, Math.max(20, size.length()), Math.PI / 6, 0.5, 1);
+                    const windowLight2 = new THREE.SpotLight(0xffeedd, performanceMode ? 0.8 : 2.5, Math.max(20, size.length()), Math.PI / 6, 0.5, 1);
                     windowLight2.position.copy(center).add(new THREE.Vector3(-size.x * 0.5 - 1, Math.max(6, size.y * 0.6), 0));
                     windowLight2.target.position.copy(center);
                     windowLight2.castShadow = false;
@@ -300,7 +306,6 @@
                     console.warn("Interior lights placement failed:", e);
                 }
 
-                // scale axis helpers relative to map size
                 try {
                     const bbox2 = new THREE.Box3().setFromObject(map);
                     const size2 = bbox2.getSize(new THREE.Vector3());
@@ -312,12 +317,8 @@
                 } catch (e) {}
             });
 
-            // postprocessing setup
             setupPostProcessing();
-
-            // SOUND
             setupAudio();
-
             setupInputs();
             loadAssets();
 
@@ -327,7 +328,6 @@
             fpsCounterEl = document.getElementById('fps-counter');
             bindAxisUI();
 
-            // apply initial performance settings
             applyPerformanceSettings(performanceMode);
         }
 
@@ -344,13 +344,13 @@
 
                 character.traverse(obj => {
                     if (obj.isMesh) {
-                        // --- PERF: reduce expensive shading for character when performanceMode ON ---
                         obj.castShadow = !performanceMode && shadowsEnabled;
                         obj.receiveShadow = true;
                         if (obj.material) {
-                            if (obj.material.envMapIntensity === undefined) obj.material.envMapIntensity = performanceMode ? 0.9 : 1.5;
-                            if (obj.material.roughness === undefined) obj.material.roughness = performanceMode ? 0.6 : 0.45;
-                            if (obj.material.metalness === undefined) obj.material.metalness = 0.0;
+                            // Enhanced character PBR responses
+                            obj.material.envMapIntensity = performanceMode ? 0.9 : 2.0;
+                            obj.material.roughness = performanceMode ? 0.6 : 0.35;
+                            obj.material.metalness = obj.material.metalness !== undefined ? obj.material.metalness : 0.05;
                             obj.material.needsUpdate = true;
                         }
                     }
@@ -384,49 +384,56 @@
             composer = new EffectComposer(renderer);
             composer.addPass(new RenderPass(scene, camera));
 
+            // AAA Ambient Occlusion (Tighter, darker crevices)
             ssaoPass = new SSAOPass(scene, camera, window.innerWidth, window.innerHeight);
-            ssaoPass.kernelRadius = 16; ssaoPass.minDistance = 0.005; ssaoPass.maxDistance = 0.1;
+            ssaoPass.kernelRadius = 16; 
+            ssaoPass.minDistance = 0.001; 
+            ssaoPass.maxDistance = 0.1;
             composer.addPass(ssaoPass);
 
-            bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.2, 0.4, 0.85);
-            bloomPass.threshold = 0.75; bloomPass.strength = performanceMode ? 0.2 : 0.4; bloomPass.radius = 0.2;
+            // Cinematic Bloom
+            bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.5, 0.4, 0.85);
+            bloomPass.threshold = 0.80; 
+            bloomPass.strength = performanceMode ? 0.2 : 0.35; 
+            bloomPass.radius = 0.6;
             composer.addPass(bloomPass);
 
+            // ToneMapping / Color space corrections natively
             composer.addPass(new OutputPass());
+
+            // FXAA Anti-Aliasing (Smooths jagged edges after bloom/SSAO)
+            fxaaPass = new ShaderPass(FXAAShader);
+            fxaaPass.material.uniforms['resolution'].value.x = 1 / window.innerWidth;
+            fxaaPass.material.uniforms['resolution'].value.y = 1 / window.innerHeight;
+            composer.addPass(fxaaPass);
         }
 
         function applyPerformanceSettings(enablePerf) {
             performanceMode = !!enablePerf;
 
-            // renderer pixel ratio
             renderer.setPixelRatio(performanceMode ? 1 : Math.min(window.devicePixelRatio || 1, 2));
 
-            // shadows
-            shadowsEnabled = !performanceMode; // if perf mode ON, shadows disabled by default
+            shadowsEnabled = !performanceMode; 
             renderer.shadowMap.enabled = !performanceMode && shadowsEnabled;
 
-            // composer
-            composerEnabled = !performanceMode; // disable heavy postprocessing in perf mode
+            composerEnabled = !performanceMode; 
 
-            // environment
             if (performanceMode) {
-                // remove heavy env map
                 scene.environment = null;
-                // keep plain color background to save memory
-                scene.background = new THREE.Color(0x87CEEB);
+                scene.background = new THREE.Color(0x8cb6d9);
                 if (ssaoPass) ssaoPass.enabled = false;
                 if (bloomPass) bloomPass.enabled = false;
+                if (fxaaPass) fxaaPass.enabled = false;
             } else {
-                // restore env map if present
                 if (envMapTexture) {
                     scene.environment = envMapTexture;
                     scene.background = envMapTexture;
                 }
                 if (ssaoPass) ssaoPass.enabled = true;
                 if (bloomPass) bloomPass.enabled = true;
+                if (fxaaPass) fxaaPass.enabled = true;
             }
 
-            // update visible shadows and castShadow flags on existing scene meshes
             scene.traverse((obj) => {
                 if (obj.isMesh) {
                     try {
@@ -436,10 +443,8 @@
                 }
             });
 
-            // reduce some expensive composer params if perf mode
-            if (bloomPass) bloomPass.strength = performanceMode ? 0.2 : 0.4;
+            if (bloomPass) bloomPass.strength = performanceMode ? 0.2 : 0.35;
 
-            // update UI
             const perfBtn = document.getElementById('perf-toggle');
             if (perfBtn) perfBtn.textContent = `Perf: ${performanceMode ? 'ON' : 'OFF'}`;
             const shadowBtn = document.getElementById('shadow-toggle');
@@ -448,7 +453,6 @@
 
         function toggleShadows() {
             shadowsEnabled = !shadowsEnabled;
-            // respect performanceMode: only allow shadows if performanceMode is false
             if (performanceMode) shadowsEnabled = false;
             renderer.shadowMap.enabled = !performanceMode && shadowsEnabled;
             scene.traverse((obj) => { if (obj.isMesh) obj.castShadow = !performanceMode && shadowsEnabled; });
@@ -540,8 +544,8 @@
                 if (map[e.code]) keys[map[e.code]] = true;
                 if (e.code === 'KeyV') currentCamIndex = (currentCamIndex + 1) % CAMERA_MODES.length;
                 if (e.code === 'F9') toggleEditMode();
-                if (e.code === 'KeyL') applyPerformanceSettings(!performanceMode); // quick toggle
-                if (e.code === 'KeyP') toggleShadows(); // optional
+                if (e.code === 'KeyL') applyPerformanceSettings(!performanceMode); 
+                if (e.code === 'KeyP') toggleShadows(); 
                 if (isEditMode) {
                     if (e.code === 'KeyT') transformControl.setMode('translate');
                     if (e.code === 'KeyR') transformControl.setMode('rotate');
@@ -600,6 +604,10 @@
                 camera.updateProjectionMatrix();
                 renderer.setSize(window.innerWidth, window.innerHeight);
                 if (composer) composer.setSize(window.innerWidth, window.innerHeight);
+                if (fxaaPass) {
+                    fxaaPass.material.uniforms['resolution'].value.x = 1 / window.innerWidth;
+                    fxaaPass.material.uniforms['resolution'].value.y = 1 / window.innerHeight;
+                }
             });
         }
 
@@ -639,7 +647,6 @@
             document.getElementById('export-area').value = code;
         }
 
-        // Physics & movement (same logic, only sound & shadows controlled by perf)
         function updatePhysics(dt) {
             if (!character || isEditMode) return;
             const isRunning = keys.shift;
@@ -651,7 +658,6 @@
             if (keys.d) moveDir.add(right); if (keys.a) moveDir.sub(right);
             const isMoving = moveDir.lengthSq() > 0;
 
-            // movement sounds (unchanged)
             if (player.onGround && !player.isJumping) {
                 if (isMoving) {
                     if (isRunning) {
@@ -745,16 +751,35 @@
             camera.lookAt(character.position.x, character.position.y + lookAtHeight, character.position.z);
         }
 
+        // --- ADDED FIX: Implement smooth editor fly camera missing in original snippet ---
+        function updateEditorCamera(dt) {
+            const speed = keys.shift ? 25.0 * dt : 10.0 * dt;
+            const dir = new THREE.Vector3();
+            camera.getWorldDirection(dir);
+            const right = new THREE.Vector3().crossVectors(dir, camera.up).normalize();
+
+            if (keys.w) camera.position.addScaledVector(dir, speed);
+            if (keys.s) camera.position.addScaledVector(dir, -speed);
+            if (keys.a) camera.position.addScaledVector(right, -speed);
+            if (keys.d) camera.position.addScaledVector(right, speed);
+            if (keys.e) camera.position.y += speed;
+            if (keys.q) camera.position.y -= speed;
+        }
+
         function animate() {
             requestAnimationFrame(animate);
             if (!isGameReady) return;
             const dt = Math.min(clock.getDelta(), 0.1);
             if (mixer) mixer.update(dt);
 
-            // update fps
             updateFps();
 
-            if (isEditMode) updateEditorCamera(dt); else { updatePhysics(dt); updateGameCamera(); }
+            if (isEditMode) {
+                updateEditorCamera(dt);
+            } else { 
+                updatePhysics(dt); 
+                updateGameCamera(); 
+            }
 
             if (axisAttachedToSelected && axisGroup && selectedObject) {
                 axisGroup.position.copy(selectedObject.getWorldPosition(new THREE.Vector3()));
@@ -762,7 +787,6 @@
                 axisGroup.visible = axisX.visible || axisY.visible || axisZ.visible || showGlobalAxis;
             }
 
-            // --- PERF: use composer only if enabled ---
             if (composer && composerEnabled && !performanceMode) {
                 composer.render();
             } else {
