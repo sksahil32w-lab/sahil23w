@@ -2,20 +2,24 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>High Fidelity Game - Optimized</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+    <title>High Fidelity Game - Mobile Optimized</title>
     <style>
-        body { margin: 0; overflow: hidden; background-color: #000; font-family: 'Segoe UI', sans-serif; user-select: none; }
-        #ui-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        /* ADDED: touch-action none prevents default mobile scrolling/swiping behaviors */
+        body { margin: 0; overflow: hidden; background-color: #000; font-family: 'Segoe UI', sans-serif; user-select: none; touch-action: none; }
+        
+        #ui-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10; }
         #crosshair { display: none; position: absolute; top: 50%; left: 50%; width: 20px; height: 20px; transform: translate(-50%, -50%); pointer-events: none; z-index: 100; }
         #crosshair::before, #crosshair::after { content: ''; position: absolute; background: rgba(0, 210, 255, 0.9); box-shadow: 0 0 4px #00d2ff; }
         #crosshair::before { top: 9px; left: 0; width: 20px; height: 2px; } 
         #crosshair::after { top: 0; left: 9px; width: 2px; height: 20px; } 
-        #loading { background: rgba(10, 10, 10, 0.8); color: #fff; padding: 30px 60px; font-size: 22px; font-weight: 600; letter-spacing: 1px; border-bottom: 3px solid #00d2ff; pointer-events: auto; backdrop-filter: blur(15px); cursor: pointer; display: flex; flex-direction: column; align-items: center; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        #loading { background: rgba(10, 10, 10, 0.8); color: #fff; padding: 30px 60px; font-size: 22px; font-weight: 600; letter-spacing: 1px; border-bottom: 3px solid #00d2ff; pointer-events: auto; backdrop-filter: blur(15px); cursor: pointer; display: flex; flex-direction: column; align-items: center; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 9999; }
         .spinner { width: 35px; height: 35px; border: 4px solid #333; border-top: 4px solid #00d2ff; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
         #hud { position: absolute; bottom: 30px; left: 30px; color: rgba(255,255,255,0.9); font-size: 14px; background: rgba(0,0,0,0.5); padding: 15px 25px; border-radius: 8px; border-left: 4px solid #00d2ff; display: block; }
-        #editor-ui { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
+        
+        #editor-ui { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 20; }
         #editor-bar { position: absolute; top: 20px; left: 50%; transform: translateX(-50%); background: rgba(0, 0, 0, 0.8); padding: 10px 20px; border-radius: 30px; color: white; font-weight: bold; border: 1px solid #00d2ff; display: flex; gap: 20px; pointer-events: auto; }
         #editor-panel { position: absolute; top: 80px; right: 20px; width: 300px; background: rgba(20, 20, 20, 0.95); color: #ddd; padding: 15px; border-radius: 8px; pointer-events: auto; border: 1px solid #444; font-family: monospace; font-size: 12px; }
         .editor-btn { background: #333; color: white; border: 1px solid #555; padding: 5px 10px; cursor: pointer; border-radius: 4px; margin-right: 5px; }
@@ -24,11 +28,31 @@
         #export-area { width: 100%; height: 150px; background: #111; color: #0f0; border: 1px solid #333; margin-top: 10px; padding: 10px; font-family: monospace; font-size: 11px; resize: none; }
         b { color: #00d2ff; }
         .key { background: #333; padding: 2px 6px; border-radius: 4px; color: white; border: 1px solid #555; }
-        /* --- AXIS/FPS STYLES (GLOBAL UI) --- */
+        
         #axis-fps-global { position: fixed; top: 10px; left: 10px; z-index: 9999; pointer-events: auto; width: 230px; background: rgba(6,10,15,0.7); border: 1px solid rgba(50, 50, 50, 0.8); padding: 8px; border-radius: 8px; color: #ddd; font-family: monospace; font-size: 12px; backdrop-filter: blur(6px); box-shadow: 0 6px 18px rgba(0,0,0,0.6); }
         #axis-fps-global label { margin-right: 8px; display: inline-flex; align-items: center; gap:6px; cursor: pointer; }
         #fps-counter { color: #00d2ff; font-weight:700; margin-left:6px; }
         #axis-fps-global .small { font-size:11px; color:#bbb; margin-top:6px; display:block; }
+
+        /* --- MOBILE CONTROLS UI --- */
+        #mobile-controls { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 15; }
+        .touch-btn { position: absolute; pointer-events: auto; background: rgba(0, 0, 0, 0.4); border: 2px solid rgba(255, 255, 255, 0.3); border-radius: 50%; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; backdrop-filter: blur(4px); }
+        .touch-btn:active, .touch-btn.active-toggle { background: rgba(0, 212, 255, 0.6); border-color: #00d2ff; }
+        
+        #joy-zone { position: absolute; bottom: 30px; left: 30px; width: 130px; height: 130px; border-radius: 50%; background: rgba(255,255,255,0.05); border: 2px solid rgba(255,255,255,0.15); pointer-events: auto; }
+        #joy-knob { position: absolute; top: 50%; left: 50%; width: 50px; height: 50px; border-radius: 50%; background: rgba(0, 212, 255, 0.5); transform: translate(-50%, -50%); pointer-events: none; box-shadow: 0 0 10px rgba(0,212,255,0.5); }
+        
+        #touch-look-zone { position: absolute; top: 0; right: 0; width: 50%; height: 100%; pointer-events: auto; }
+        
+        #btn-jump { bottom: 40px; right: 40px; width: 70px; height: 70px; font-size: 14px; }
+        #btn-sprint { bottom: 130px; right: 80px; width: 55px; height: 55px; font-size: 12px; }
+        #btn-cam-swap { top: 20px; right: 20px; width: 50px; height: 50px; font-size: 12px; }
+        #btn-mobile-edit { top: 80px; right: 20px; width: 50px; height: 50px; font-size: 20px; }
+
+        @media (max-width: 900px) {
+            #mobile-controls { display: block; }
+            #hud { display: none; } /* Hide desktop instructions on mobile */
+        }
     </style>
     
     <script async src="https://unpkg.com/es-module-shims@1.6.3/dist/es-module-shims.js"></script>
@@ -47,18 +71,27 @@
         <div id="crosshair"></div>
         <div id="loading">
             <div class="spinner"></div>
-            <div>CLICK TO START</div>
+            <div>TAP TO START</div>
         </div>
         <div id="hud">
             <b>WASD</b> Move | <b>SHIFT</b> Sprint | <b>V</b> Change Camera | <b>F9</b> EDITOR MODE
         </div>
     </div>
 
-    <!-- --- AXIS/FPS GLOBAL UI --- -->
+    <div id="mobile-controls">
+        <div id="touch-look-zone"></div>
+        <div id="joy-zone"><div id="joy-knob"></div></div>
+        
+        <div id="btn-jump" class="touch-btn">JUMP</div>
+        <div id="btn-sprint" class="touch-btn">SPRINT</div>
+        <div id="btn-cam-swap" class="touch-btn">CAM</div>
+        <div id="btn-mobile-edit" class="touch-btn">🛠️</div>
+    </div>
+
     <div id="axis-fps-global">
         <div style="display:flex; align-items:center; justify-content:space-between;">
             <div style="font-weight:700; color:#00d2ff">DEBUG</div>
-            <div style="font-size:11px; color:#aaa">v1</div>
+            <div style="font-size:11px; color:#aaa">v1 Mobile</div>
         </div>
         <div class="small">FPS: <span id="fps-counter">0</span></div>
 
@@ -77,25 +110,22 @@
             <button id="perf-toggle" class="editor-btn" style="flex:1; padding:6px 8px;">Perf: ON</button>
             <button id="shadow-toggle" class="editor-btn" style="flex:1; padding:6px 8px;">Shadows</button>
         </div>
-
-        <div class="small">Tip: Press <b>L</b> to toggle Perf mode.</div>
     </div>
-    <!-- --- END AXIS/FPS GLOBAL UI --- -->
 
     <div id="editor-ui">
         <div id="editor-bar">
             <span>🛠️ EDIT MODE</span>
             <span style="font-weight:normal; font-size:14px; margin-top:2px;">
-                <span class="key">WASD</span> Fly | Aim & Click Select | <span class="key">T</span> Move <span class="key">R</span> Rotate <span class="key">Y</span> Scale
+                <span class="key">WASD / Joy</span> Fly | Aim & Tap | <span class="key">T</span> Move <span class="key">R</span> Rotate <span class="key">Y</span> Scale
             </span>
         </div>
 
         <div id="editor-panel">
             <h3 style="margin-top:0; color:#00d2ff">SELECTED OBJECT</h3>
             <div id="obj-name" style="color:#fff; margin-bottom:10px;">None</div>
-            <button class="editor-btn" onclick="setGizmo('translate')">Move (T)</button>
-            <button class="editor-btn" onclick="setGizmo('rotate')">Rotate (R)</button>
-            <button class="editor-btn" onclick="setGizmo('scale')">Scale (Y)</button>
+            <button class="editor-btn" onclick="setGizmo('translate')">Move</button>
+            <button class="editor-btn" onclick="setGizmo('rotate')">Rotate</button>
+            <button class="editor-btn" onclick="setGizmo('scale')">Scale</button>
 
             <hr style="border-color:#333; margin: 15px 0;">
             <button class="editor-btn" style="width:100%; background:#00d2ff; color:#000; font-weight:bold" onclick="exportData()">💾 GENERATE CODE</button>
@@ -123,7 +153,6 @@
             rotSpeed: 8.0, camSmoothness: 0.1
         };
 
-        // --- CAMERA MODES ---
         const CAMERA_MODES = [
             { name: "TPS_CLOSE", dist: 1.5, height: 1.6 },
             { name: "FPS",       dist: 0.0, height: 1.7 },
@@ -136,14 +165,12 @@
         let character, mixer, actions = {}, activeAction;
         let isGameReady = false;
 
-        // Perf state (default: ON)
         let performanceMode = true;
         let shadowsEnabled = false; 
         let composerEnabled = true;
         let envMapTexture = null;
         let ssaoPass = null, bloomPass = null, fxaaPass = null;
 
-        // Editor & physics
         let isEditMode = false;
         let transformControl;
         let raycaster = new THREE.Raycaster();
@@ -154,21 +181,20 @@
         let downRay = new THREE.Raycaster();
         let forwardRay = new THREE.Raycaster();
 
-        // Player
         const player = { velocity: new THREE.Vector3(), onGround: false, isJumping: false };
         const keys = { w: false, a: false, s: false, d: false, shift: false, space: false, q: false, e: false };
 
-        // Camera smoothing
         const camState = { angleX: 0, angleY: Math.PI / 8, curDist: 3.0, curHeight: 1.9 };
 
-        // PMREM generator
-        let pmremGenerator = null;
+        // MOBILE CONTROL STATES
+        const joystick = { active: false, x: 0, y: 0, id: null };
+        const touchLook = { id: null, lastX: 0, lastY: 0 };
+        let mobileSprintToggle = false;
 
-        // SOUND
+        let pmremGenerator = null;
         let listener;
         const sounds = { walk: null, run: null, jump: null, land: null };
 
-        // AXIS/FPS
         let axisGroup = null, axisX = null, axisY = null, axisZ = null;
         let axisAttachedToSelected = false, showGlobalAxis = false;
         let fpsCounterEl = null, _frameCount = 0, _lastFpsTime = performance.now();
@@ -177,46 +203,38 @@
         animate();
 
         function init() {
-            // --- HIGH FIDELITY RENDERER SETUP ---
             renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" }); 
-            renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2)); // Up to 2x for sharp edges
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
             renderer.setSize(window.innerWidth, window.innerHeight);
             renderer.shadowMap.enabled = true; 
-            renderer.shadowMap.type = THREE.PCFSoftShadowMap; // Soft shadows
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
             renderer.outputColorSpace = THREE.SRGBColorSpace;
-            renderer.toneMapping = THREE.ACESFilmicToneMapping; // Cinematic Tone Mapping
-            renderer.toneMappingExposure = 1.2; // Slightly brighter, vibrant exposure
+            renderer.toneMapping = THREE.ACESFilmicToneMapping;
+            renderer.toneMappingExposure = 1.2;
             document.body.appendChild(renderer.domElement);
 
             scene = new THREE.Scene();
             scene.background = new THREE.Color(0x8cb6d9);
-            // AAA: Exponential fog for atmospheric depth scattering
             scene.fog = new THREE.FogExp2(0x8cb6d9, 0.0015);
             clock = new THREE.Clock();
 
             camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 2000);
 
-            // LIGHTING (Upgraded for Realistic GTA-V Style)
-            // Hemisphere matches sky scattering and ground bounce
             const hemiLight = new THREE.HemisphereLight(0xddeeff, 0x2f3525, 0.45);
             hemiLight.position.set(0, 50, 0);
             scene.add(hemiLight);
 
-            // Warm, intense physical sun
             const sunLight = new THREE.DirectionalLight(0xfff5e6, 3.5);
             sunLight.position.set(100, 200, 100);
             sunLight.castShadow = true;
-            
-            // High-res AAA shadow mapping
             sunLight.shadow.mapSize.set(2048, 2048); 
             sunLight.shadow.camera.left = -250; sunLight.shadow.camera.right = 250;
             sunLight.shadow.camera.top = 250; sunLight.shadow.camera.bottom = -250;
             sunLight.shadow.camera.near = 0.5; sunLight.shadow.camera.far = 1000;
             sunLight.shadow.bias = -0.0001;
-            sunLight.shadow.normalBias = 0.05; // Eliminates shadow acne on models
+            sunLight.shadow.normalBias = 0.05;
             scene.add(sunLight);
 
-            // PMREM for HDR Reflections
             pmremGenerator = new THREE.PMREMGenerator(renderer);
             pmremGenerator.compileEquirectangularShader();
 
@@ -226,24 +244,16 @@
                     if (!performanceMode) {
                         scene.environment = envMapTexture;
                         scene.background = envMapTexture;
-                    } else {
-                        scene.environment = null;
                     }
-                } catch (e) {
-                    console.warn("HDR processing failed", e);
-                }
+                } catch (e) {}
                 hdrTexture.dispose();
-            }, undefined, function(err) {
-                console.warn('HDRI load failed (hdri.hdr). Make sure file is present:', err);
-            });
+            }, undefined, function(err) {});
 
-            // TRANSFORM CONTROLS
             transformControl = new TransformControls(camera, renderer.domElement);
             scene.add(transformControl);
 
             createAxisHelpers(5);
 
-            // LOAD MAP (With Material Enhancements)
             const mapLoader = new GLTFLoader();
             mapLoader.load('map.glb', (gltf) => {
                 const map = gltf.scene;
@@ -256,65 +266,16 @@
                         child.castShadow = !performanceMode && shadowsEnabled;
                         child.receiveShadow = true;
                         collidableMeshList.push(child);
-
                         if (child.material) {
-                            // AAA PBR Enhancements: More reactive to HDR environment
                             child.material.metalness = child.material.metalness !== undefined ? child.material.metalness : 0.1;
                             child.material.roughness = performanceMode ? 0.6 : (child.material.roughness || 0.4);
-                            // Boost reflections intensely when perf mode off
                             child.material.envMapIntensity = performanceMode ? 0.8 : 2.5; 
                             child.material.side = THREE.FrontSide;
-                            
-                            if(child.material.isMeshStandardMaterial) {
-                                child.material.needsUpdate = true;
-                            }
+                            if(child.material.isMeshStandardMaterial) child.material.needsUpdate = true;
                         }
                     }
                 });
                 scene.add(map);
-
-                // --- INTERIOR LIGHTS ---
-                try {
-                    const bbox = new THREE.Box3().setFromObject(map);
-                    const center = bbox.getCenter(new THREE.Vector3());
-                    const size = bbox.getSize(new THREE.Vector3());
-
-                    const roomLight = new THREE.PointLight(0xfff0dd, performanceMode ? 2.0 : 4.0, Math.max(20, Math.max(size.x, size.z) * 1.5));
-                    roomLight.position.copy(center).add(new THREE.Vector3(0, Math.max(4, size.y * 0.5), 0));
-                    roomLight.castShadow = false;
-                    roomLight.name = "Interior_RoomLight";
-                    scene.add(roomLight);
-
-                    const ambientLight = new THREE.AmbientLight(0xffffff, performanceMode ? 0.45 : 0.3);
-                    ambientLight.name = "Interior_Ambient";
-                    scene.add(ambientLight);
-
-                    const windowLight1 = new THREE.SpotLight(0xffeedd, performanceMode ? 1.0 : 3.0, Math.max(20, size.length()), Math.PI / 6, 0.4, 1);
-                    windowLight1.position.copy(center).add(new THREE.Vector3(size.x * 0.5 + 1, Math.max(6, size.y * 0.6), 0));
-                    windowLight1.target.position.copy(center);
-                    windowLight1.castShadow = false;
-                    scene.add(windowLight1);
-                    scene.add(windowLight1.target);
-
-                    const windowLight2 = new THREE.SpotLight(0xffeedd, performanceMode ? 0.8 : 2.5, Math.max(20, size.length()), Math.PI / 6, 0.5, 1);
-                    windowLight2.position.copy(center).add(new THREE.Vector3(-size.x * 0.5 - 1, Math.max(6, size.y * 0.6), 0));
-                    windowLight2.target.position.copy(center);
-                    windowLight2.castShadow = false;
-                    scene.add(windowLight2);
-                    scene.add(windowLight2.target);
-                } catch (e) {
-                    console.warn("Interior lights placement failed:", e);
-                }
-
-                try {
-                    const bbox2 = new THREE.Box3().setFromObject(map);
-                    const size2 = bbox2.getSize(new THREE.Vector3());
-                    const biggest = Math.max(size2.x, size2.y, size2.z);
-                    if (axisGroup) {
-                        const scalar = Math.max(1, biggest / 5);
-                        axisGroup.scale.setScalar(scalar);
-                    }
-                } catch (e) {}
             });
 
             setupPostProcessing();
@@ -346,13 +307,6 @@
                     if (obj.isMesh) {
                         obj.castShadow = !performanceMode && shadowsEnabled;
                         obj.receiveShadow = true;
-                        if (obj.material) {
-                            // Enhanced character PBR responses
-                            obj.material.envMapIntensity = performanceMode ? 0.9 : 2.0;
-                            obj.material.roughness = performanceMode ? 0.6 : 0.35;
-                            obj.material.metalness = obj.material.metalness !== undefined ? obj.material.metalness : 0.05;
-                            obj.material.needsUpdate = true;
-                        }
                     }
                 });
                 scene.add(character);
@@ -383,25 +337,13 @@
         function setupPostProcessing() {
             composer = new EffectComposer(renderer);
             composer.addPass(new RenderPass(scene, camera));
-
-            // AAA Ambient Occlusion (Tighter, darker crevices)
             ssaoPass = new SSAOPass(scene, camera, window.innerWidth, window.innerHeight);
-            ssaoPass.kernelRadius = 16; 
-            ssaoPass.minDistance = 0.001; 
-            ssaoPass.maxDistance = 0.1;
+            ssaoPass.kernelRadius = 16; ssaoPass.minDistance = 0.001; ssaoPass.maxDistance = 0.1;
             composer.addPass(ssaoPass);
-
-            // Cinematic Bloom
             bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.5, 0.4, 0.85);
-            bloomPass.threshold = 0.80; 
-            bloomPass.strength = performanceMode ? 0.2 : 0.35; 
-            bloomPass.radius = 0.6;
+            bloomPass.threshold = 0.80; bloomPass.strength = performanceMode ? 0.2 : 0.35; bloomPass.radius = 0.6;
             composer.addPass(bloomPass);
-
-            // ToneMapping / Color space corrections natively
             composer.addPass(new OutputPass());
-
-            // FXAA Anti-Aliasing (Smooths jagged edges after bloom/SSAO)
             fxaaPass = new ShaderPass(FXAAShader);
             fxaaPass.material.uniforms['resolution'].value.x = 1 / window.innerWidth;
             fxaaPass.material.uniforms['resolution'].value.y = 1 / window.innerHeight;
@@ -410,45 +352,28 @@
 
         function applyPerformanceSettings(enablePerf) {
             performanceMode = !!enablePerf;
-
             renderer.setPixelRatio(performanceMode ? 1 : Math.min(window.devicePixelRatio || 1, 2));
-
             shadowsEnabled = !performanceMode; 
             renderer.shadowMap.enabled = !performanceMode && shadowsEnabled;
-
             composerEnabled = !performanceMode; 
 
             if (performanceMode) {
-                scene.environment = null;
-                scene.background = new THREE.Color(0x8cb6d9);
+                scene.environment = null; scene.background = new THREE.Color(0x8cb6d9);
                 if (ssaoPass) ssaoPass.enabled = false;
                 if (bloomPass) bloomPass.enabled = false;
                 if (fxaaPass) fxaaPass.enabled = false;
             } else {
-                if (envMapTexture) {
-                    scene.environment = envMapTexture;
-                    scene.background = envMapTexture;
-                }
+                if (envMapTexture) { scene.environment = envMapTexture; scene.background = envMapTexture; }
                 if (ssaoPass) ssaoPass.enabled = true;
                 if (bloomPass) bloomPass.enabled = true;
                 if (fxaaPass) fxaaPass.enabled = true;
             }
 
-            scene.traverse((obj) => {
-                if (obj.isMesh) {
-                    try {
-                        obj.castShadow = !performanceMode && shadowsEnabled;
-                        obj.receiveShadow = true;
-                    } catch (e) {}
-                }
-            });
-
+            scene.traverse((obj) => { if (obj.isMesh) { try { obj.castShadow = !performanceMode && shadowsEnabled; obj.receiveShadow = true; } catch (e) {} } });
             if (bloomPass) bloomPass.strength = performanceMode ? 0.2 : 0.35;
 
             const perfBtn = document.getElementById('perf-toggle');
             if (perfBtn) perfBtn.textContent = `Perf: ${performanceMode ? 'ON' : 'OFF'}`;
-            const shadowBtn = document.getElementById('shadow-toggle');
-            if (shadowBtn) shadowBtn.textContent = `Shadows: ${(!performanceMode && shadowsEnabled) ? 'ON' : 'OFF'}`;
         }
 
         function toggleShadows() {
@@ -456,8 +381,6 @@
             if (performanceMode) shadowsEnabled = false;
             renderer.shadowMap.enabled = !performanceMode && shadowsEnabled;
             scene.traverse((obj) => { if (obj.isMesh) obj.castShadow = !performanceMode && shadowsEnabled; });
-            const shadowBtn = document.getElementById('shadow-toggle');
-            if (shadowBtn) shadowBtn.textContent = `Shadows: ${(!performanceMode && shadowsEnabled) ? 'ON' : 'OFF'}`;
         }
 
         function setupAudio() {
@@ -466,7 +389,7 @@
             const audioLoader = new THREE.AudioLoader();
             function loadSound(name, file, loop = false, volume = 1.0) {
                 const sound = new THREE.Audio(listener);
-                audioLoader.load(file, buffer => { sound.setBuffer(buffer); sound.setLoop(loop); sound.setVolume(volume); sounds[name] = sound; }, undefined, () => console.warn('Missing sound:', file));
+                audioLoader.load(file, buffer => { sound.setBuffer(buffer); sound.setLoop(loop); sound.setVolume(volume); sounds[name] = sound; }, undefined, () => {});
             }
             loadSound('walk', 'walk.mp3', true, 0.4);
             loadSound('run', 'run.mp3', true, 0.7);
@@ -478,16 +401,13 @@
             axisGroup = new THREE.Group();
             const geomX = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0,0,0), new THREE.Vector3(baseLength,0,0)]);
             axisX = new THREE.Line(geomX, new THREE.LineBasicMaterial({ color: 0xff4444 }));
-            axisX.name = "Axis_X";
             const geomY = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0,0,0), new THREE.Vector3(0,baseLength,0)]);
             axisY = new THREE.Line(geomY, new THREE.LineBasicMaterial({ color: 0x44ff44 }));
-            axisY.name = "Axis_Y";
             const geomZ = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0,0,0), new THREE.Vector3(0,0,baseLength)]);
             axisZ = new THREE.Line(geomZ, new THREE.LineBasicMaterial({ color: 0x4444ff }));
-            axisZ.name = "Axis_Z";
             axisX.visible = axisY.visible = axisZ.visible = false;
             axisGroup.add(axisX); axisGroup.add(axisY); axisGroup.add(axisZ);
-            axisGroup.visible = false; axisGroup.name = "Axis_Group";
+            axisGroup.visible = false;
             scene.add(axisGroup);
         }
 
@@ -498,14 +418,9 @@
         }
 
         function bindAxisUI() {
-            const axX = document.getElementById('axis-x');
-            const axY = document.getElementById('axis-y');
-            const axZ = document.getElementById('axis-z');
-            const attachBtn = document.getElementById('attach-axis-btn');
-            const globalBtn = document.getElementById('show-global-axis');
-            const perfBtn = document.getElementById('perf-toggle');
-            const shadowBtn = document.getElementById('shadow-toggle');
-
+            const axX = document.getElementById('axis-x'), axY = document.getElementById('axis-y'), axZ = document.getElementById('axis-z');
+            const attachBtn = document.getElementById('attach-axis-btn'), globalBtn = document.getElementById('show-global-axis');
+            
             axX.addEventListener('change', () => setAxisVisibility(axX.checked, axY.checked, axZ.checked));
             axY.addEventListener('change', () => setAxisVisibility(axX.checked, axY.checked, axZ.checked));
             axZ.addEventListener('change', () => setAxisVisibility(axX.checked, axY.checked, axZ.checked));
@@ -513,32 +428,23 @@
             attachBtn.addEventListener('click', () => {
                 axisAttachedToSelected = !axisAttachedToSelected;
                 attachBtn.textContent = axisAttachedToSelected ? 'Attached' : 'Attach';
-                if (axisAttachedToSelected && selectedObject) {
-                    axisGroup.position.copy(selectedObject.getWorldPosition(new THREE.Vector3()));
-                    axisGroup.quaternion.copy(selectedObject.getWorldQuaternion(new THREE.Quaternion()));
-                }
             });
-
             globalBtn.addEventListener('click', () => {
                 showGlobalAxis = !showGlobalAxis;
                 globalBtn.textContent = showGlobalAxis ? 'Global On' : 'Global';
                 axisGroup.visible = showGlobalAxis || axisX.visible || axisY.visible || axisZ.visible;
             });
-
-            perfBtn.addEventListener('click', () => {
-                applyPerformanceSettings(!performanceMode);
-            });
-
-            shadowBtn.addEventListener('click', () => {
-                toggleShadows();
-            });
+            document.getElementById('perf-toggle').addEventListener('click', () => applyPerformanceSettings(!performanceMode));
+            document.getElementById('shadow-toggle').addEventListener('click', () => toggleShadows());
         }
 
         function setupInputs() {
-            document.addEventListener('click', () => {
-                if (listener && listener.context && listener.context.state === 'suspended') listener.context.resume();
-            });
+            // Audio context unlock
+            const unlockAudio = () => { if (listener && listener.context && listener.context.state === 'suspended') listener.context.resume(); };
+            document.addEventListener('click', unlockAudio);
+            document.addEventListener('touchstart', unlockAudio, {passive: true});
 
+            // DESKTOP KEYBOARD
             document.addEventListener('keydown', e => {
                 const map = { KeyW:'w', KeyA:'a', KeyS:'s', KeyD:'d', ShiftLeft:'shift', Space:'space', KeyQ:'q', KeyE:'e' };
                 if (map[e.code]) keys[map[e.code]] = true;
@@ -552,12 +458,12 @@
                     if (e.code === 'KeyY') transformControl.setMode('scale');
                 }
             });
-
             document.addEventListener('keyup', e => {
                 const map = { KeyW:'w', KeyA:'a', KeyS:'s', KeyD:'d', ShiftLeft:'shift', Space:'space', KeyQ:'q', KeyE:'e' };
                 if (map[e.code]) keys[map[e.code]] = false;
             });
 
+            // DESKTOP MOUSE LOOK
             document.addEventListener('mousemove', e => {
                 if (document.pointerLockElement === document.body) {
                     const sensitivity = 0.002;
@@ -577,8 +483,11 @@
             });
 
             document.addEventListener('mousedown', (e) => {
+                // Ignore touches for mouse logic
+                if(e.pointerType === "touch" || window.innerWidth <= 900) return; 
+
                 if (isEditMode) {
-                    if (e.target.closest('#editor-panel')) return;
+                    if (e.target.closest('#editor-panel') || e.target.closest('#axis-fps-global')) return;
                     if (document.pointerLockElement !== document.body) { document.body.requestPointerLock(); return; }
                     raycaster.setFromCamera(centerPoint, camera);
                     const intersects = raycaster.intersectObjects(scene.children, true);
@@ -590,13 +499,139 @@
                         }
                         if (target.type !== 'LineSegments' && !target.isTransformControls) selectObject(target);
                     } else {
-                        transformControl.detach();
-                        selectedObject = null;
+                        transformControl.detach(); selectedObject = null;
                         document.getElementById('obj-name').innerText = "None";
                     }
                 } else {
                     document.body.requestPointerLock();
                 }
+            });
+
+            // --- MOBILE TOUCH INPUTS ---
+
+            // Touch Look Area (Right Side)
+            const lookZone = document.getElementById('touch-look-zone');
+            lookZone.addEventListener('touchstart', e => {
+                if(e.target.classList.contains('touch-btn')) return; // Ignore buttons
+                if (touchLook.id !== null) return;
+                const t = e.changedTouches[0];
+                touchLook.id = t.identifier;
+                touchLook.lastX = t.clientX;
+                touchLook.lastY = t.clientY;
+                
+                // Editor tap-to-select
+                if (isEditMode) {
+                    const pointer = new THREE.Vector2();
+                    pointer.x = (t.clientX / window.innerWidth) * 2 - 1;
+                    pointer.y = -(t.clientY / window.innerHeight) * 2 + 1;
+                    raycaster.setFromCamera(pointer, camera);
+                    const intersects = raycaster.intersectObjects(scene.children, true);
+                    if (intersects.length > 0) {
+                        let target = intersects[0].object;
+                        while (target.parent && target.parent.type !== 'Scene') {
+                            if (target.name === "MyGameMap" || target.name === "PlayerCharacter") break;
+                            target = target.parent;
+                        }
+                        if (target.type !== 'LineSegments' && !target.isTransformControls) selectObject(target);
+                    } else {
+                        transformControl.detach(); selectedObject = null;
+                        document.getElementById('obj-name').innerText = "None";
+                    }
+                }
+            }, {passive: false});
+
+            lookZone.addEventListener('touchmove', e => {
+                for (let t of e.changedTouches) {
+                    if (t.identifier === touchLook.id) {
+                        const dx = t.clientX - touchLook.lastX;
+                        const dy = t.clientY - touchLook.lastY;
+                        const sensitivity = 0.005;
+                        if (isEditMode) {
+                            editorCameraRotation.y -= dx * sensitivity;
+                            editorCameraRotation.x -= dy * sensitivity;
+                            editorCameraRotation.x = Math.max(-Math.PI/2, Math.min(Math.PI/2, editorCameraRotation.x));
+                            camera.rotation.order = "YXZ";
+                            camera.rotation.y = editorCameraRotation.y;
+                            camera.rotation.x = editorCameraRotation.x;
+                        } else {
+                            camState.angleX -= dx * sensitivity;
+                            camState.angleY -= dy * sensitivity;
+                            camState.angleY = Math.max(0.1, Math.min(Math.PI / 2.2, camState.angleY));
+                        }
+                        touchLook.lastX = t.clientX;
+                        touchLook.lastY = t.clientY;
+                    }
+                }
+            }, {passive: false});
+
+            const endLook = e => { for (let t of e.changedTouches) { if (t.identifier === touchLook.id) touchLook.id = null; } };
+            lookZone.addEventListener('touchend', endLook);
+            lookZone.addEventListener('touchcancel', endLook);
+
+            // Virtual Joystick
+            const joyZone = document.getElementById('joy-zone');
+            const joyKnob = document.getElementById('joy-knob');
+            let joyRect = joyZone.getBoundingClientRect();
+
+            const updateJoy = (x, y) => {
+                const cx = joyRect.left + joyRect.width / 2;
+                const cy = joyRect.top + joyRect.height / 2;
+                let dx = x - cx; let dy = y - cy;
+                const maxR = joyRect.width / 2;
+                const dist = Math.hypot(dx, dy);
+                if (dist > maxR) { dx = (dx/dist)*maxR; dy = (dy/dist)*maxR; }
+                joyKnob.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
+                joystick.x = dx / maxR;
+                joystick.y = dy / maxR;
+            };
+
+            joyZone.addEventListener('touchstart', e => {
+                e.preventDefault();
+                joyRect = joyZone.getBoundingClientRect();
+                const t = e.changedTouches[0];
+                joystick.id = t.identifier;
+                joystick.active = true;
+                updateJoy(t.clientX, t.clientY);
+            }, {passive: false});
+
+            joyZone.addEventListener('touchmove', e => {
+                e.preventDefault();
+                for (let t of e.changedTouches) {
+                    if (t.identifier === joystick.id) updateJoy(t.clientX, t.clientY);
+                }
+            }, {passive: false});
+
+            const endJoy = e => {
+                for (let t of e.changedTouches) {
+                    if (t.identifier === joystick.id) {
+                        joystick.active = false; joystick.id = null; joystick.x = 0; joystick.y = 0;
+                        joyKnob.style.transform = `translate(-50%, -50%)`;
+                    }
+                }
+            };
+            joyZone.addEventListener('touchend', endJoy);
+            joyZone.addEventListener('touchcancel', endJoy);
+
+            // Action Buttons
+            const btnJump = document.getElementById('btn-jump');
+            btnJump.addEventListener('touchstart', e => { e.preventDefault(); keys.space = true; });
+            btnJump.addEventListener('touchend', e => { e.preventDefault(); keys.space = false; });
+
+            const btnSprint = document.getElementById('btn-sprint');
+            btnSprint.addEventListener('touchstart', e => { 
+                e.preventDefault(); 
+                mobileSprintToggle = !mobileSprintToggle; 
+                btnSprint.classList.toggle('active-toggle', mobileSprintToggle);
+            });
+
+            document.getElementById('btn-cam-swap').addEventListener('touchstart', e => {
+                e.preventDefault();
+                currentCamIndex = (currentCamIndex + 1) % CAMERA_MODES.length;
+            });
+
+            document.getElementById('btn-mobile-edit').addEventListener('touchstart', e => {
+                e.preventDefault();
+                toggleEditMode();
             });
 
             window.addEventListener('resize', () => {
@@ -608,6 +643,7 @@
                     fxaaPass.material.uniforms['resolution'].value.x = 1 / window.innerWidth;
                     fxaaPass.material.uniforms['resolution'].value.y = 1 / window.innerHeight;
                 }
+                joyRect = joyZone.getBoundingClientRect();
             });
         }
 
@@ -616,13 +652,21 @@
             const ui = document.getElementById('editor-ui');
             const hud = document.getElementById('hud');
             const crosshair = document.getElementById('crosshair');
+            const mobEditBtn = document.getElementById('btn-mobile-edit');
+            
             if (isEditMode) {
-                ui.style.display = 'block'; hud.style.display = 'none'; crosshair.style.display = 'block';
+                ui.style.display = 'block'; 
+                if(window.innerWidth > 900) hud.style.display = 'none'; 
+                crosshair.style.display = 'block';
+                mobEditBtn.classList.add('active-toggle');
                 const euler = new THREE.Euler().setFromQuaternion(camera.quaternion, 'YXZ');
                 editorCameraRotation.y = euler.y; editorCameraRotation.x = euler.x;
                 if (character) character.visible = true;
             } else {
-                ui.style.display = 'none'; hud.style.display = 'block'; crosshair.style.display = 'none';
+                ui.style.display = 'none'; 
+                if(window.innerWidth > 900) hud.style.display = 'block'; 
+                crosshair.style.display = 'none';
+                mobEditBtn.classList.remove('active-toggle');
                 transformControl.detach(); selectedObject = null;
             }
         }
@@ -631,11 +675,6 @@
             selectedObject = obj;
             transformControl.attach(obj);
             document.getElementById('obj-name').innerText = obj.name || "Unnamed Mesh";
-            if (axisAttachedToSelected && axisGroup && selectedObject) {
-                axisGroup.position.copy(selectedObject.getWorldPosition(new THREE.Vector3()));
-                axisGroup.quaternion.copy(selectedObject.getWorldQuaternion(new THREE.Quaternion()));
-                axisGroup.visible = axisX.visible || axisY.visible || axisZ.visible || showGlobalAxis;
-            }
         }
 
         function generateCode() {
@@ -649,14 +688,25 @@
 
         function updatePhysics(dt) {
             if (!character || isEditMode) return;
-            const isRunning = keys.shift;
+            const isRunning = keys.shift || mobileSprintToggle;
             const speed = isRunning ? CONFIG.runSpeed : CONFIG.walkSpeed;
             const forward = new THREE.Vector3(-Math.sin(camState.angleX), 0, -Math.cos(camState.angleX));
             const right = new THREE.Vector3(Math.cos(camState.angleX), 0, -Math.sin(camState.angleX));
             let moveDir = new THREE.Vector3(0,0,0);
-            if (keys.w) moveDir.add(forward); if (keys.s) moveDir.sub(forward);
-            if (keys.d) moveDir.add(right); if (keys.a) moveDir.sub(right);
-            const isMoving = moveDir.lengthSq() > 0;
+            
+            // Desktop Keys
+            if (keys.w) moveDir.add(forward); 
+            if (keys.s) moveDir.sub(forward);
+            if (keys.d) moveDir.add(right); 
+            if (keys.a) moveDir.sub(right);
+
+            // Mobile Joystick (True Analog 360)
+            if (joystick.active) {
+                moveDir.addScaledVector(forward, -joystick.y);
+                moveDir.addScaledVector(right, joystick.x);
+            }
+
+            const isMoving = moveDir.lengthSq() > 0.01;
 
             if (player.onGround && !player.isJumping) {
                 if (isMoving) {
@@ -678,21 +728,25 @@
 
             let isBlocked = false;
             if (moveDir.lengthSq() > 0) {
-                moveDir.normalize();
+                // Normalize but respect analog strength for speed
+                const length = moveDir.length();
+                const normalizedDir = moveDir.clone().normalize();
+                
                 const rayOrigin = character.position.clone(); rayOrigin.y += 1.0;
-                forwardRay.set(rayOrigin, moveDir);
+                forwardRay.set(rayOrigin, normalizedDir);
                 const hits = forwardRay.intersectObjects(collidableMeshList, true);
                 if (hits.length > 0 && hits[0].distance < 0.5) isBlocked = true;
-            }
-
-            if (moveDir.lengthSq() > 0 && !isBlocked) {
-                character.position.addScaledVector(moveDir, speed * dt);
-                const targetRot = Math.atan2(moveDir.x, moveDir.z);
-                let rotDiff = targetRot - character.rotation.y;
-                while (rotDiff > Math.PI) rotDiff -= Math.PI * 2;
-                while (rotDiff < -Math.PI) rotDiff += Math.PI * 2;
-                character.rotation.y += rotDiff * CONFIG.rotSpeed * dt;
-                if (!player.isJumping && player.onGround) fadeToAction(isRunning ? 'run' : 'walk', 0.2);
+                
+                if (!isBlocked) {
+                    // Apply movement. Speed scaled by analog stick distance (length capped at 1)
+                    character.position.addScaledVector(normalizedDir, speed * Math.min(length, 1.0) * dt);
+                    const targetRot = Math.atan2(normalizedDir.x, normalizedDir.z);
+                    let rotDiff = targetRot - character.rotation.y;
+                    while (rotDiff > Math.PI) rotDiff -= Math.PI * 2;
+                    while (rotDiff < -Math.PI) rotDiff += Math.PI * 2;
+                    character.rotation.y += rotDiff * CONFIG.rotSpeed * dt;
+                    if (!player.isJumping && player.onGround) fadeToAction(isRunning ? 'run' : 'walk', 0.2);
+                }
             } else {
                 if (!player.isJumping && player.onGround) fadeToAction('idle', 0.2);
             }
@@ -713,9 +767,7 @@
                 const groundHeight = hit.point.y;
                 const distToFloor = hit.distance;
                 if (distToFloor <= 2.2 && player.velocity.y <= 0) {
-                    if (!player.onGround) {
-                        if (sounds.land) { if (sounds.land.isPlaying) sounds.land.stop(); sounds.land.play(); }
-                    }
+                    if (!player.onGround && sounds.land) { if (sounds.land.isPlaying) sounds.land.stop(); sounds.land.play(); }
                     character.position.y = groundHeight;
                     player.velocity.y = 0;
                     player.onGround = true;
@@ -751,9 +803,8 @@
             camera.lookAt(character.position.x, character.position.y + lookAtHeight, character.position.z);
         }
 
-        // --- ADDED FIX: Implement smooth editor fly camera missing in original snippet ---
         function updateEditorCamera(dt) {
-            const speed = keys.shift ? 25.0 * dt : 10.0 * dt;
+            const speed = (keys.shift || mobileSprintToggle) ? 25.0 * dt : 10.0 * dt;
             const dir = new THREE.Vector3();
             camera.getWorldDirection(dir);
             const right = new THREE.Vector3().crossVectors(dir, camera.up).normalize();
@@ -762,6 +813,12 @@
             if (keys.s) camera.position.addScaledVector(dir, -speed);
             if (keys.a) camera.position.addScaledVector(right, -speed);
             if (keys.d) camera.position.addScaledVector(right, speed);
+            
+            if (joystick.active) {
+                camera.position.addScaledVector(dir, speed * -joystick.y);
+                camera.position.addScaledVector(right, speed * joystick.x);
+            }
+
             if (keys.e) camera.position.y += speed;
             if (keys.q) camera.position.y -= speed;
         }
@@ -774,12 +831,8 @@
 
             updateFps();
 
-            if (isEditMode) {
-                updateEditorCamera(dt);
-            } else { 
-                updatePhysics(dt); 
-                updateGameCamera(); 
-            }
+            if (isEditMode) updateEditorCamera(dt);
+            else { updatePhysics(dt); updateGameCamera(); }
 
             if (axisAttachedToSelected && axisGroup && selectedObject) {
                 axisGroup.position.copy(selectedObject.getWorldPosition(new THREE.Vector3()));
@@ -787,11 +840,8 @@
                 axisGroup.visible = axisX.visible || axisY.visible || axisZ.visible || showGlobalAxis;
             }
 
-            if (composer && composerEnabled && !performanceMode) {
-                composer.render();
-            } else {
-                renderer.render(scene, camera);
-            }
+            if (composer && composerEnabled && !performanceMode) composer.render();
+            else renderer.render(scene, camera);
         }
 
         function updateFps() {
@@ -799,10 +849,8 @@
             const now = performance.now();
             const elapsed = (now - _lastFpsTime) / 1000;
             if (elapsed >= 0.5) {
-                const fps = Math.round((_frameCount / elapsed));
-                if (fpsCounterEl) fpsCounterEl.textContent = fps;
-                _frameCount = 0;
-                _lastFpsTime = now;
+                if (fpsCounterEl) fpsCounterEl.textContent = Math.round((_frameCount / elapsed));
+                _frameCount = 0; _lastFpsTime = now;
             }
         }
     </script>
