@@ -36,7 +36,7 @@
 
         /* --- MOBILE CONTROLS UI --- */
         #mobile-controls { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 15; }
-        .touch-btn { position: absolute; pointer-events: auto; background: rgba(0, 0, 0, 0.4); border: 2px solid rgba(255, 255, 255, 0.3); border-radius: 50%; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; backdrop-filter: blur(4px); }
+        .touch-btn { position: absolute; pointer-events: auto; background: rgba(0, 0, 0, 0.4); border: 2px solid rgba(255, 255, 255, 0.3); border-radius: 50%; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; backdrop-filter: blur(4px); text-shadow: 0 1px 3px rgba(0,0,0,0.8); }
         .touch-btn:active, .touch-btn.active-toggle { background: rgba(0, 212, 255, 0.6); border-color: #00d2ff; }
         
         #joy-zone { position: absolute; bottom: 30px; left: 30px; width: 130px; height: 130px; border-radius: 50%; background: rgba(255,255,255,0.05); border: 2px solid rgba(255,255,255,0.15); pointer-events: auto; }
@@ -91,7 +91,7 @@
     <div id="axis-fps-global">
         <div style="display:flex; align-items:center; justify-content:space-between;">
             <div style="font-weight:700; color:#00d2ff">DEBUG</div>
-            <div style="font-size:11px; color:#aaa">v1 Mobile</div>
+            <div style="font-size:11px; color:#aaa">v2 High-Quality Mobile</div>
         </div>
         <div class="small">FPS: <span id="fps-counter">0</span></div>
 
@@ -107,7 +107,7 @@
         </div>
 
         <div style="margin-top:8px; display:flex; gap:6px;">
-            <button id="perf-toggle" class="editor-btn" style="flex:1; padding:6px 8px;">Perf: ON</button>
+            <button id="perf-toggle" class="editor-btn" style="flex:1; padding:6px 8px;">Perf: OFF</button>
             <button id="shadow-toggle" class="editor-btn" style="flex:1; padding:6px 8px;">Shadows</button>
         </div>
     </div>
@@ -153,11 +153,12 @@
             rotSpeed: 8.0, camSmoothness: 0.1
         };
 
+        // Adjusted distances closer to the character to improve face/texture visibility
         const CAMERA_MODES = [
-            { name: "TPS_CLOSE", dist: 1.5, height: 1.6 },
-            { name: "FPS",       dist: 0.0, height: 1.7 },
-            { name: "TPS_MID",   dist: 3.0, height: 1.9 },
-            { name: "TPS_FAR",   dist: 5.5, height: 2.5 }
+            { name: "TPS_CLOSE", dist: 1.2, height: 1.5 },
+            { name: "FPS",       dist: 0.0, height: 1.65 },
+            { name: "TPS_MID",   dist: 2.2, height: 1.7 }, 
+            { name: "TPS_FAR",   dist: 4.5, height: 2.2 }
         ];
         let currentCamIndex = 2;
 
@@ -165,11 +166,13 @@
         let character, mixer, actions = {}, activeAction;
         let isGameReady = false;
 
-        let performanceMode = true;
-        let shadowsEnabled = false; 
+        // Default to high quality rendering
+        let performanceMode = false;
+        let shadowsEnabled = true; 
         let composerEnabled = true;
         let envMapTexture = null;
         let ssaoPass = null, bloomPass = null, fxaaPass = null;
+        let maxAnisotropy = 1;
 
         let isEditMode = false;
         let transformControl;
@@ -213,14 +216,22 @@
             renderer.toneMappingExposure = 1.2;
             document.body.appendChild(renderer.domElement);
 
+            maxAnisotropy = renderer.capabilities.getMaxAnisotropy();
+
             scene = new THREE.Scene();
             scene.background = new THREE.Color(0x8cb6d9);
             scene.fog = new THREE.FogExp2(0x8cb6d9, 0.0015);
             clock = new THREE.Clock();
 
             camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 2000);
+            scene.add(camera);
 
-            const hemiLight = new THREE.HemisphereLight(0xddeeff, 0x2f3525, 0.45);
+            // Add Fill Light to Camera: Keeps character face illuminated regardless of environment
+            const cameraFillLight = new THREE.PointLight(0xffffff, 0.4, 20);
+            cameraFillLight.position.set(0, 0, 0); 
+            camera.add(cameraFillLight);
+
+            const hemiLight = new THREE.HemisphereLight(0xddeeff, 0x2f3525, 0.5);
             hemiLight.position.set(0, 50, 0);
             scene.add(hemiLight);
 
@@ -271,6 +282,11 @@
                             child.material.roughness = performanceMode ? 0.6 : (child.material.roughness || 0.4);
                             child.material.envMapIntensity = performanceMode ? 0.8 : 2.5; 
                             child.material.side = THREE.FrontSide;
+                            
+                            // High Quality Map Textures
+                            if(child.material.map) child.material.map.anisotropy = maxAnisotropy;
+                            if(child.material.normalMap) child.material.normalMap.anisotropy = maxAnisotropy;
+
                             if(child.material.isMeshStandardMaterial) child.material.needsUpdate = true;
                         }
                     }
@@ -307,6 +323,28 @@
                     if (obj.isMesh) {
                         obj.castShadow = !performanceMode && shadowsEnabled;
                         obj.receiveShadow = true;
+                        
+                        // Enforce high quality textures on character specifically
+                        if (obj.material) {
+                            const processMat = (mat) => {
+                                if (mat.map) {
+                                    mat.map.anisotropy = maxAnisotropy;
+                                    mat.map.colorSpace = THREE.SRGBColorSpace; 
+                                }
+                                if (mat.normalMap) mat.normalMap.anisotropy = maxAnisotropy;
+                                
+                                // Boost environmental reflections to make character pop
+                                mat.envMapIntensity = 1.2;
+                                if(mat.shininess !== undefined) mat.shininess = Math.max(mat.shininess, 30);
+                                mat.needsUpdate = true;
+                            };
+
+                            if (Array.isArray(obj.material)) {
+                                obj.material.forEach(processMat);
+                            } else {
+                                processMat(obj.material);
+                            }
+                        }
                     }
                 });
                 scene.add(character);
