@@ -44,6 +44,7 @@
         #touch-look-zone { position: absolute; top: 0; right: 0; width: 50%; height: 100%; pointer-events: auto; }
         
         #btn-jump { bottom: 40px; right: 40px; width: 70px; height: 70px; font-size: 14px; }
+        #btn-switch-char { bottom: 40px; right: 130px; width: 60px; height: 60px; font-size: 10px; text-align: center; line-height: 1.1; }
         #btn-sprint { bottom: 130px; right: 80px; width: 55px; height: 55px; font-size: 12px; }
         #btn-cam-swap { top: 20px; right: 20px; width: 50px; height: 50px; font-size: 12px; }
         #btn-mobile-edit { top: 80px; right: 20px; width: 50px; height: 50px; font-size: 20px; }
@@ -73,7 +74,7 @@
             <div>TAP TO START</div>
         </div>
         <div id="hud">
-            <b>WASD</b> Move | <b>SHIFT</b> Sprint | <b>V</b> Change Camera | <b>F9</b> EDITOR MODE
+            <b>WASD</b> Move | <b>SHIFT</b> Sprint | <b>C</b> Switch Char | <b>V</b> Change Camera | <b>F9</b> EDITOR MODE
         </div>
     </div>
 
@@ -82,6 +83,7 @@
         <div id="joy-zone"><div id="joy-knob"></div></div>
         
         <div id="btn-jump" class="touch-btn">JUMP</div>
+        <div id="btn-switch-char" class="touch-btn">SWITCH<br>CHAR</div>
         <div id="btn-sprint" class="touch-btn">SPRINT</div>
         <div id="btn-cam-swap" class="touch-btn">CAM</div>
         <div id="btn-mobile-edit" class="touch-btn">🛠️</div>
@@ -90,7 +92,7 @@
     <div id="axis-fps-global">
         <div style="display:flex; align-items:center; justify-content:space-between;">
             <div style="font-weight:700; color:#00d2ff">DEBUG</div>
-            <div style="font-size:11px; color:#aaa">v4 Light & Perf Fix</div>
+            <div style="font-size:11px; color:#aaa">v5 GTA Character Switch</div>
         </div>
         <div class="small">FPS: <span id="fps-counter">0</span></div>
 
@@ -162,11 +164,15 @@
         let currentCamIndex = 2;
 
         let scene, camera, renderer, composer, clock;
-        let character, mixer, actions = {}, activeAction;
+        
+        // Multi-Character System Variables
+        let characters = [];
+        let activeCharIndex = 0;
+        
         let isGameReady = false;
 
         let performanceMode = isMobile;
-        let shadowsEnabled = !isMobile; // Off by default on mobile for perf
+        let shadowsEnabled = !isMobile;
         let composerEnabled = !isMobile;
         let envMapTexture = null;
         let bloomPass = null, fxaaPass = null;
@@ -180,15 +186,12 @@
         let editorCameraRotation = { x: 0, y: 0 };
         let collidableMeshList = [];
         
-        // Raycasters (Optimized with limits)
         let downRay = new THREE.Raycaster();
-        downRay.far = 4.0; // Prevent infinite checking
+        downRay.far = 4.0;
         let forwardRay = new THREE.Raycaster();
-        forwardRay.far = 1.5; // Prevent infinite checking
+        forwardRay.far = 1.5; 
 
-        const player = { velocity: new THREE.Vector3(), onGround: false, isJumping: false };
         const keys = { w: false, a: false, s: false, d: false, shift: false, space: false, q: false, e: false };
-
         const camState = { angleX: 0, angleY: Math.PI / 8, curDist: 3.0, curHeight: 1.9 };
 
         // MOBILE CONTROL STATES
@@ -212,7 +215,6 @@
             renderer.setPixelRatio(isMobile ? 1 : Math.min(window.devicePixelRatio || 1, 1.5));
             renderer.setSize(window.innerWidth, window.innerHeight);
             renderer.shadowMap.enabled = shadowsEnabled; 
-            // Switched to PCFShadowMap on mobile as Soft Shadows are extremely heavy
             renderer.shadowMap.type = isMobile ? THREE.PCFShadowMap : THREE.PCFSoftShadowMap;
             renderer.outputColorSpace = THREE.SRGBColorSpace;
             renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -229,16 +231,13 @@
             camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 2000);
             scene.add(camera);
 
-            // 1. LIGHTING FIX: Strong Ambient Light. This ensures interiors are never completely pitch black.
             const ambientLight = new THREE.AmbientLight(0xffffff, 0.85); 
             scene.add(ambientLight);
 
-            // 2. LIGHTING FIX: Boosted Hemisphere Light for better vertical gradient coloring in shadowed areas.
             const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 0.8);
             hemiLight.position.set(0, 50, 0);
             scene.add(hemiLight);
 
-            // 3. LIGHTING FIX: Boosted Camera Fill light so the character is always visible even in dark corners.
             const cameraFillLight = new THREE.PointLight(0xffffff, 0.6, 30);
             cameraFillLight.position.set(0, 0, 0); 
             camera.add(cameraFillLight);
@@ -315,56 +314,71 @@
         async function loadAssets() {
             const loader = new FBXLoader();
             try {
-                character = await loader.loadAsync('character.fbx');
-                character.name = "PlayerCharacter";
-                character.position.set(0, 5, 0);
-
-                const box = new THREE.Box3().setFromObject(character);
-                const size = box.getSize(new THREE.Vector3());
-                if (size.y > 0) character.scale.setScalar(1.75 / size.y);
-
-                character.traverse(obj => {
-                    if (obj.isMesh) {
-                        obj.castShadow = shadowsEnabled;
-                        obj.receiveShadow = true;
-                        
-                        if (obj.material) {
-                            const processMat = (mat) => {
-                                if (mat.map) {
-                                    mat.map.anisotropy = maxAnisotropy;
-                                    mat.map.colorSpace = THREE.SRGBColorSpace; 
-                                }
-                                if (mat.normalMap) mat.normalMap.anisotropy = maxAnisotropy;
-                                
-                                mat.envMapIntensity = 1.2;
-                                if(mat.shininess !== undefined) mat.shininess = Math.max(mat.shininess, 30);
-                                mat.needsUpdate = true;
-                            };
-
-                            if (Array.isArray(obj.material)) obj.material.forEach(processMat);
-                            else processMat(obj.material);
-                        }
-                    }
-                });
-                scene.add(character);
-
-                mixer = new THREE.AnimationMixer(character);
-                const loadAnim = async (name, file) => {
-                    try {
-                        const obj = await loader.loadAsync(file);
-                        const action = mixer.clipAction(obj.animations[0]);
-                        actions[name] = action;
-                        if (name === 'jump') { action.setLoop(THREE.LoopOnce); action.clampWhenFinished = true; }
-                    } catch (e) {}
-                };
-
-                await Promise.all([
-                    loadAnim('idle', 'idle.fbx'), loadAnim('walk', 'walk.fbx'),
-                    loadAnim('run', 'run.fbx'), loadAnim('jump', 'jump.fbx')
+                // Pre-load animations to share across characters
+                const [idleAnim, walkAnim, runAnim, jumpAnim] = await Promise.all([
+                    loader.loadAsync('idle.fbx'), loader.loadAsync('walk.fbx'),
+                    loader.loadAsync('run.fbx'), loader.loadAsync('jump.fbx')
                 ]);
 
-                if (actions['idle']) { activeAction = actions['idle']; activeAction.play(); }
-                mixer.addEventListener('finished', (e) => { if (e.action === actions['jump']) player.isJumping = false; });
+                async function loadCharacterFile(file, name, xOffset) {
+                    let charMesh;
+                    try {
+                        charMesh = await loader.loadAsync(file);
+                    } catch(e) {
+                        console.warn(`Could not load ${file}, using character.fbx fallback.`);
+                        charMesh = await loader.loadAsync('character.fbx');
+                    }
+                    
+                    charMesh.name = name;
+                    charMesh.position.set(xOffset, 5, 0);
+
+                    const box = new THREE.Box3().setFromObject(charMesh);
+                    const size = box.getSize(new THREE.Vector3());
+                    if (size.y > 0) charMesh.scale.setScalar(1.75 / size.y);
+
+                    charMesh.traverse(obj => {
+                        if (obj.isMesh) {
+                            obj.castShadow = shadowsEnabled;
+                            obj.receiveShadow = true;
+                            if (obj.material) {
+                                const processMat = (mat) => {
+                                    if (mat.map) { mat.map.anisotropy = maxAnisotropy; mat.map.colorSpace = THREE.SRGBColorSpace; }
+                                    if (mat.normalMap) mat.normalMap.anisotropy = maxAnisotropy;
+                                    mat.envMapIntensity = 1.2;
+                                    if(mat.shininess !== undefined) mat.shininess = Math.max(mat.shininess, 30);
+                                    mat.needsUpdate = true;
+                                };
+                                if (Array.isArray(obj.material)) obj.material.forEach(processMat);
+                                else processMat(obj.material);
+                            }
+                        }
+                    });
+                    scene.add(charMesh);
+
+                    const charMixer = new THREE.AnimationMixer(charMesh);
+                    const charActions = {
+                        'idle': charMixer.clipAction(idleAnim.animations[0]),
+                        'walk': charMixer.clipAction(walkAnim.animations[0]),
+                        'run': charMixer.clipAction(runAnim.animations[0]),
+                        'jump': charMixer.clipAction(jumpAnim.animations[0])
+                    };
+                    charActions['jump'].setLoop(THREE.LoopOnce);
+                    charActions['jump'].clampWhenFinished = true;
+
+                    const charData = {
+                        mesh: charMesh, mixer: charMixer, actions: charActions, activeAction: charActions['idle'],
+                        velocity: new THREE.Vector3(), onGround: false, isJumping: false, isFollowing: false
+                    };
+
+                    charMixer.addEventListener('finished', (e) => { if (e.action === charActions['jump']) charData.isJumping = false; });
+                    charData.activeAction.play();
+                    characters.push(charData);
+                }
+
+                // Load Player 1 and Player 2
+                await loadCharacterFile('character.fbx', 'Player1_Character', 0);
+                await loadCharacterFile('2ndcharacter.fbx', 'Player2_Character', 3);
+
                 document.getElementById('loading').style.display = 'none';
                 isGameReady = true;
 
@@ -372,7 +386,7 @@
         }
 
         function setupPostProcessing() {
-            if (isMobile) return; // Prevent heavy memory allocation on mobile entirely
+            if (isMobile) return; 
 
             composer = new EffectComposer(renderer);
             composer.addPass(new RenderPass(scene, camera));
@@ -411,7 +425,6 @@
             shadowsEnabled = !shadowsEnabled;
             renderer.shadowMap.enabled = shadowsEnabled;
             
-            // Fix: Actually update the materials so the shadows toggle takes effect instantly
             scene.traverse((obj) => { 
                 if (obj.isMesh) {
                     obj.castShadow = shadowsEnabled;
@@ -489,6 +502,16 @@
             document.addEventListener('keydown', e => {
                 const map = { KeyW:'w', KeyA:'a', KeyS:'s', KeyD:'d', ShiftLeft:'shift', Space:'space', KeyQ:'q', KeyE:'e' };
                 if (map[e.code]) keys[map[e.code]] = true;
+                
+                // Switch Character Input
+                if (e.code === 'KeyC') {
+                    if(characters.length > 1) {
+                        activeCharIndex = (activeCharIndex + 1) % characters.length;
+                        if (sounds.walk && sounds.walk.isPlaying) sounds.walk.stop();
+                        if (sounds.run && sounds.run.isPlaying) sounds.run.stop();
+                    }
+                }
+                
                 if (e.code === 'KeyV') currentCamIndex = (currentCamIndex + 1) % CAMERA_MODES.length;
                 if (e.code === 'F9') toggleEditMode();
                 if (e.code === 'KeyL') applyPerformanceSettings(!performanceMode); 
@@ -533,7 +556,7 @@
                     if (intersects.length > 0) {
                         let target = intersects[0].object;
                         while (target.parent && target.parent.type !== 'Scene') {
-                            if (target.name === "MyGameMap" || target.name === "PlayerCharacter") break;
+                            if (target.name === "MyGameMap" || target.name.includes("Character")) break;
                             target = target.parent;
                         }
                         if (target.type !== 'LineSegments' && !target.isTransformControls) selectObject(target);
@@ -564,7 +587,7 @@
                     if (intersects.length > 0) {
                         let target = intersects[0].object;
                         while (target.parent && target.parent.type !== 'Scene') {
-                            if (target.name === "MyGameMap" || target.name === "PlayerCharacter") break;
+                            if (target.name === "MyGameMap" || target.name.includes("Character")) break;
                             target = target.parent;
                         }
                         if (target.type !== 'LineSegments' && !target.isTransformControls) selectObject(target);
@@ -647,8 +670,20 @@
             joyZone.addEventListener('touchcancel', endJoy);
 
             const btnJump = document.getElementById('btn-jump');
-            btnJump.addEventListener('touchstart', e => { e.preventDefault(); keys.space = true; });
-            btnJump.addEventListener('touchend', e => { e.preventDefault(); keys.space = false; });
+            btnJump.addEventListener('touchstart', e => { e.preventDefault(); keys.space = true; btnJump.classList.add('active-toggle'); });
+            btnJump.addEventListener('touchend', e => { e.preventDefault(); keys.space = false; btnJump.classList.remove('active-toggle'); });
+
+            const btnSwitchChar = document.getElementById('btn-switch-char');
+            btnSwitchChar.addEventListener('touchstart', e => { 
+                e.preventDefault();
+                if(characters.length > 1) {
+                    activeCharIndex = (activeCharIndex + 1) % characters.length;
+                    if (sounds.walk && sounds.walk.isPlaying) sounds.walk.stop();
+                    if (sounds.run && sounds.run.isPlaying) sounds.run.stop();
+                }
+                btnSwitchChar.classList.add('active-toggle');
+            });
+            btnSwitchChar.addEventListener('touchend', e => { e.preventDefault(); btnSwitchChar.classList.remove('active-toggle'); });
 
             const btnSprint = document.getElementById('btn-sprint');
             btnSprint.addEventListener('touchstart', e => { 
@@ -694,7 +729,7 @@
                 mobEditBtn.classList.add('active-toggle');
                 const euler = new THREE.Euler().setFromQuaternion(camera.quaternion, 'YXZ');
                 editorCameraRotation.y = euler.y; editorCameraRotation.x = euler.x;
-                if (character) character.visible = true;
+                if (characters.length > 0) characters.forEach(c => c.mesh.visible = true);
             } else {
                 ui.style.display = 'none'; 
                 if(window.innerWidth > 900) hud.style.display = 'block'; 
@@ -719,121 +754,166 @@
             document.getElementById('export-area').value = code;
         }
 
-        function updatePhysics(dt) {
-            if (!character || isEditMode) return;
-            const isRunning = keys.shift || mobileSprintToggle;
-            const speed = isRunning ? CONFIG.runSpeed : CONFIG.walkSpeed;
-            const forward = new THREE.Vector3(-Math.sin(camState.angleX), 0, -Math.cos(camState.angleX));
-            const right = new THREE.Vector3(Math.cos(camState.angleX), 0, -Math.sin(camState.angleX));
-            let moveDir = new THREE.Vector3(0,0,0);
-            
-            if (keys.w) moveDir.add(forward); 
-            if (keys.s) moveDir.sub(forward);
-            if (keys.d) moveDir.add(right); 
-            if (keys.a) moveDir.sub(right);
-
-            if (joystick.active) {
-                moveDir.addScaledVector(forward, -joystick.y);
-                moveDir.addScaledVector(right, joystick.x);
-            }
-
-            const isMoving = moveDir.lengthSq() > 0.01;
-
-            if (player.onGround && !player.isJumping) {
-                if (isMoving) {
-                    if (isRunning) {
-                        if (sounds.walk && sounds.walk.isPlaying) sounds.walk.stop();
-                        if (sounds.run && !sounds.run.isPlaying) sounds.run.play();
-                    } else {
-                        if (sounds.run && sounds.run.isPlaying) sounds.run.stop();
-                        if (sounds.walk && !sounds.walk.isPlaying) sounds.walk.play();
-                    }
-                } else {
-                    if (sounds.walk && sounds.walk.isPlaying) sounds.walk.stop();
-                    if (sounds.run && sounds.run.isPlaying) sounds.run.stop();
-                }
-            } else {
-                if (sounds.walk && sounds.walk.isPlaying) sounds.walk.stop();
-                if (sounds.run && sounds.run.isPlaying) sounds.run.stop();
-            }
-
-            let isBlocked = false;
-            if (moveDir.lengthSq() > 0) {
-                const length = moveDir.length();
-                const normalizedDir = moveDir.clone().normalize();
-                
-                const rayOrigin = character.position.clone(); rayOrigin.y += 1.0;
-                forwardRay.set(rayOrigin, normalizedDir);
-                
-                // Optimized raycast limit
-                const hits = forwardRay.intersectObjects(collidableMeshList, true);
-                if (hits.length > 0 && hits[0].distance < 0.5) isBlocked = true;
-                
-                if (!isBlocked) {
-                    character.position.addScaledVector(normalizedDir, speed * Math.min(length, 1.0) * dt);
-                    const targetRot = Math.atan2(normalizedDir.x, normalizedDir.z);
-                    let rotDiff = targetRot - character.rotation.y;
-                    while (rotDiff > Math.PI) rotDiff -= Math.PI * 2;
-                    while (rotDiff < -Math.PI) rotDiff += Math.PI * 2;
-                    character.rotation.y += rotDiff * CONFIG.rotSpeed * dt;
-                    if (!player.isJumping && player.onGround) fadeToAction(isRunning ? 'run' : 'walk', 0.2);
-                }
-            } else {
-                if (!player.isJumping && player.onGround) fadeToAction('idle', 0.2);
-            }
-
-            if (keys.space && player.onGround && !player.isJumping) {
-                player.velocity.y = CONFIG.jumpForce; player.onGround = false; player.isJumping = true;
-                if (sounds.jump) { if (sounds.jump.isPlaying) sounds.jump.stop(); sounds.jump.play(); }
-                fadeToAction('jump', 0.1);
-            }
-            player.velocity.y += CONFIG.gravity * dt;
-            character.position.y += player.velocity.y * dt;
-
-            const downOrigin = character.position.clone(); downOrigin.y += 2.0;
-            downRay.set(downOrigin, new THREE.Vector3(0, -1, 0));
-            
-            // Optimized raycast limit ensures we don't calculate collisions down to infinity
-            const intersects = downRay.intersectObjects(collidableMeshList, true);
-            if (intersects.length > 0) {
-                const hit = intersects[0];
-                const groundHeight = hit.point.y;
-                const distToFloor = hit.distance;
-                if (distToFloor <= 2.2 && player.velocity.y <= 0) {
-                    if (!player.onGround && sounds.land) { if (sounds.land.isPlaying) sounds.land.stop(); sounds.land.play(); }
-                    character.position.y = groundHeight;
-                    player.velocity.y = 0;
-                    player.onGround = true;
-                } else if (distToFloor > 2.2) {
-                    player.onGround = false;
-                }
-            } else {
-                player.onGround = false;
-                if (character.position.y < -50) character.position.set(0, 10, 0);
-            }
+        function fadeToAction(charData, name, duration) {
+            if (!charData.actions[name] || charData.activeAction === charData.actions[name]) return;
+            const prev = charData.activeAction;
+            charData.activeAction = charData.actions[name];
+            if (prev) prev.fadeOut(duration);
+            charData.activeAction.reset().fadeIn(duration).play();
         }
 
-        function fadeToAction(name, duration) {
-            if (!actions[name] || activeAction === actions[name]) return;
-            const prev = activeAction;
-            activeAction = actions[name];
-            if (prev) prev.fadeOut(duration);
-            activeAction.reset().fadeIn(duration).play();
+        function updatePhysics(dt) {
+            if (characters.length === 0 || isEditMode) return;
+            
+            for(let i = 0; i < characters.length; i++) {
+                let charData = characters[i];
+                let charMesh = charData.mesh;
+                let isActive = (i === activeCharIndex);
+
+                let isRunning = false;
+                const forward = new THREE.Vector3(-Math.sin(camState.angleX), 0, -Math.cos(camState.angleX));
+                const right = new THREE.Vector3(Math.cos(camState.angleX), 0, -Math.sin(camState.angleX));
+                let moveDir = new THREE.Vector3(0,0,0);
+
+                if (isActive) {
+                    // Player Control
+                    isRunning = keys.shift || mobileSprintToggle;
+                    if (keys.w) moveDir.add(forward); 
+                    if (keys.s) moveDir.sub(forward);
+                    if (keys.d) moveDir.add(right); 
+                    if (keys.a) moveDir.sub(right);
+
+                    if (joystick.active) {
+                        moveDir.addScaledVector(forward, -joystick.y);
+                        moveDir.addScaledVector(right, joystick.x);
+                    }
+                } else {
+                    // AI Follow Logic
+                    let targetMesh = characters[activeCharIndex].mesh;
+                    let dist = charMesh.position.distanceTo(targetMesh.position);
+
+                    // Hysteresis to prevent jittering when reaching the exact stop boundary
+                    if (dist > 3.5) charData.isFollowing = true;
+                    if (dist < 2.0) charData.isFollowing = false;
+
+                    if (charData.isFollowing) {
+                        let dirToTarget = new THREE.Vector3().subVectors(targetMesh.position, charMesh.position);
+                        dirToTarget.y = 0; 
+                        dirToTarget.normalize();
+                        moveDir.copy(dirToTarget);
+                        isRunning = dist > 6.0; // Sprint if too far behind
+                    }
+                }
+
+                const speed = isRunning ? CONFIG.runSpeed : CONFIG.walkSpeed;
+                const isMoving = moveDir.lengthSq() > 0.01;
+
+                // Handle Audio for Active Player
+                if (isActive) {
+                    if (charData.onGround && !charData.isJumping) {
+                        if (isMoving) {
+                            if (isRunning) {
+                                if (sounds.walk && sounds.walk.isPlaying) sounds.walk.stop();
+                                if (sounds.run && !sounds.run.isPlaying) sounds.run.play();
+                            } else {
+                                if (sounds.run && sounds.run.isPlaying) sounds.run.stop();
+                                if (sounds.walk && !sounds.walk.isPlaying) sounds.walk.play();
+                            }
+                        } else {
+                            if (sounds.walk && sounds.walk.isPlaying) sounds.walk.stop();
+                            if (sounds.run && sounds.run.isPlaying) sounds.run.stop();
+                        }
+                    } else {
+                        if (sounds.walk && sounds.walk.isPlaying) sounds.walk.stop();
+                        if (sounds.run && sounds.run.isPlaying) sounds.run.stop();
+                    }
+                }
+
+                let isBlocked = false;
+                if (isMoving) {
+                    const length = moveDir.length();
+                    const normalizedDir = moveDir.clone().normalize();
+                    
+                    const rayOrigin = charMesh.position.clone(); rayOrigin.y += 1.0;
+                    forwardRay.set(rayOrigin, normalizedDir);
+                    const hits = forwardRay.intersectObjects(collidableMeshList, true);
+                    if (hits.length > 0 && hits[0].distance < 0.5) isBlocked = true;
+                    
+                    if (!isBlocked) {
+                        // Normalize length for joystick but apply fully to AI
+                        const appliedLength = isActive ? Math.min(length, 1.0) : 1.0;
+                        charMesh.position.addScaledVector(normalizedDir, speed * appliedLength * dt);
+                        
+                        const targetRot = Math.atan2(normalizedDir.x, normalizedDir.z);
+                        let rotDiff = targetRot - charMesh.rotation.y;
+                        while (rotDiff > Math.PI) rotDiff -= Math.PI * 2;
+                        while (rotDiff < -Math.PI) rotDiff += Math.PI * 2;
+                        charMesh.rotation.y += rotDiff * CONFIG.rotSpeed * dt;
+                        
+                        if (!charData.isJumping && charData.onGround) fadeToAction(charData, isRunning ? 'run' : 'walk', 0.2);
+                    } else {
+                        if (!isActive && !charData.isJumping && charData.onGround) fadeToAction(charData, 'idle', 0.2);
+                    }
+                } else {
+                    if (!charData.isJumping && charData.onGround) fadeToAction(charData, 'idle', 0.2);
+                }
+
+                // Handle Jumping (Only active player for now)
+                if (isActive && keys.space && charData.onGround && !charData.isJumping) {
+                    charData.velocity.y = CONFIG.jumpForce; charData.onGround = false; charData.isJumping = true;
+                    if (sounds.jump) { if (sounds.jump.isPlaying) sounds.jump.stop(); sounds.jump.play(); }
+                    fadeToAction(charData, 'jump', 0.1);
+                }
+
+                // Gravity & Collision
+                charData.velocity.y += CONFIG.gravity * dt;
+                charMesh.position.y += charData.velocity.y * dt;
+
+                const downOrigin = charMesh.position.clone(); downOrigin.y += 2.0;
+                downRay.set(downOrigin, new THREE.Vector3(0, -1, 0));
+                
+                const intersects = downRay.intersectObjects(collidableMeshList, true);
+                if (intersects.length > 0) {
+                    const hit = intersects[0];
+                    const groundHeight = hit.point.y;
+                    const distToFloor = hit.distance;
+                    if (distToFloor <= 2.2 && charData.velocity.y <= 0) {
+                        if (isActive && !charData.onGround && sounds.land) { 
+                            if (sounds.land.isPlaying) sounds.land.stop(); sounds.land.play(); 
+                        }
+                        charMesh.position.y = groundHeight;
+                        charData.velocity.y = 0;
+                        charData.onGround = true;
+                    } else if (distToFloor > 2.2) {
+                        charData.onGround = false;
+                    }
+                } else {
+                    charData.onGround = false;
+                    if (charMesh.position.y < -50) charMesh.position.set(isActive?0:2, 10, isActive?0:-2);
+                }
+            }
         }
 
         function updateGameCamera() {
-            if (!character) return;
+            if (characters.length === 0) return;
+            const activeMesh = characters[activeCharIndex].mesh;
+
             const target = CAMERA_MODES[currentCamIndex];
             camState.curDist = THREE.MathUtils.lerp(camState.curDist, target.dist, 0.1);
             camState.curHeight = THREE.MathUtils.lerp(camState.curHeight, target.height, 0.1);
-            if (camState.curDist < 0.2) character.visible = false; else character.visible = true;
+            
+            // Only hide the active character if camera is in FPS view
+            if (camState.curDist < 0.2) activeMesh.visible = false; else activeMesh.visible = true;
+
             const offsetX = Math.sin(camState.angleX) * camState.curDist * Math.cos(camState.angleY);
             const offsetZ = Math.cos(camState.angleX) * camState.curDist * Math.cos(camState.angleY);
             const offsetY = camState.curDist * Math.sin(camState.angleY);
-            const targetPos = new THREE.Vector3(character.position.x + offsetX, character.position.y + camState.curHeight + offsetY, character.position.z + offsetZ);
+            
+            const targetPos = new THREE.Vector3(activeMesh.position.x + offsetX, activeMesh.position.y + camState.curHeight + offsetY, activeMesh.position.z + offsetZ);
             camera.position.copy(targetPos);
+            
             const lookAtHeight = (currentCamIndex === 1) ? 1.7 : 1.5;
-            camera.lookAt(character.position.x, character.position.y + lookAtHeight, character.position.z);
+            camera.lookAt(activeMesh.position.x, activeMesh.position.y + lookAtHeight, activeMesh.position.z);
         }
 
         function updateEditorCamera(dt) {
@@ -860,7 +940,8 @@
             requestAnimationFrame(animate);
             if (!isGameReady) return;
             const dt = Math.min(clock.getDelta(), 0.1);
-            if (mixer) mixer.update(dt);
+            
+            characters.forEach(c => c.mixer.update(dt));
 
             updateFps();
 
