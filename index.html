@@ -18,20 +18,13 @@
         
         #hud { position: absolute; bottom: 30px; left: 30px; color: rgba(255,255,255,0.9); font-size: 14px; background: rgba(0,0,0,0.5); padding: 15px 25px; border-radius: 8px; border-left: 4px solid #00d2ff; display: block; }
         
-        #editor-ui { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 20; }
-        #editor-bar { position: absolute; top: 20px; left: 50%; transform: translateX(-50%); background: rgba(0, 0, 0, 0.8); padding: 10px 20px; border-radius: 30px; color: white; font-weight: bold; border: 1px solid #00d2ff; display: flex; gap: 20px; pointer-events: auto; }
-        #editor-panel { position: absolute; top: 80px; right: 20px; width: 300px; background: rgba(20, 20, 20, 0.95); color: #ddd; padding: 15px; border-radius: 8px; pointer-events: auto; border: 1px solid #444; font-family: monospace; font-size: 12px; }
-        .editor-btn { background: #333; color: white; border: 1px solid #555; padding: 5px 10px; cursor: pointer; border-radius: 4px; margin-right: 5px; }
-        .editor-btn:hover { background: #555; }
-        .editor-btn.active { background: #00d2ff; color: black; border-color: #00d2ff; }
-        #export-area { width: 100%; height: 150px; background: #111; color: #0f0; border: 1px solid #333; margin-top: 10px; padding: 10px; font-family: monospace; font-size: 11px; resize: none; }
-        b { color: #00d2ff; }
-        .key { background: #333; padding: 2px 6px; border-radius: 4px; color: white; border: 1px solid #555; }
-        
         #axis-fps-global { position: fixed; top: 10px; left: 10px; z-index: 9999; pointer-events: auto; width: 230px; background: rgba(6,10,15,0.7); border: 1px solid rgba(50, 50, 50, 0.8); padding: 8px; border-radius: 8px; color: #ddd; font-family: monospace; font-size: 12px; backdrop-filter: blur(6px); box-shadow: 0 6px 18px rgba(0,0,0,0.6); }
         #axis-fps-global label { margin-right: 8px; display: inline-flex; align-items: center; gap:6px; cursor: pointer; }
         #fps-counter { color: #00d2ff; font-weight:700; margin-left:6px; }
         #axis-fps-global .small { font-size:11px; color:#bbb; margin-top:6px; display:block; }
+        
+        .toggle-btn { background: #333; color: white; border: 1px solid #555; padding: 5px 10px; cursor: pointer; border-radius: 4px; margin-right: 5px; }
+        .toggle-btn:hover { background: #555; }
 
         /* --- MOBILE CONTROLS UI --- */
         #mobile-controls { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 15; }
@@ -47,7 +40,6 @@
         #btn-switch-char { bottom: 40px; right: 130px; width: 60px; height: 60px; font-size: 10px; text-align: center; line-height: 1.1; }
         #btn-sprint { bottom: 130px; right: 80px; width: 55px; height: 55px; font-size: 12px; }
         #btn-cam-swap { top: 20px; right: 20px; width: 50px; height: 50px; font-size: 12px; }
-        #btn-mobile-edit { top: 80px; right: 20px; width: 50px; height: 50px; font-size: 20px; }
 
         @media (max-width: 900px) {
             #mobile-controls { display: block; }
@@ -74,7 +66,7 @@
             <div>TAP TO START</div>
         </div>
         <div id="hud">
-            <b>WASD</b> Move | <b>SHIFT</b> Sprint | <b>C</b> Switch Char | <b>V</b> Change Camera | <b>F9</b> EDITOR MODE
+            <b>WASD</b> Move | <b>SHIFT</b> Sprint | <b>C</b> Switch Char | <b>V</b> Change Camera
         </div>
     </div>
 
@@ -86,13 +78,12 @@
         <div id="btn-switch-char" class="touch-btn">SWITCH<br>CHAR</div>
         <div id="btn-sprint" class="touch-btn">SPRINT</div>
         <div id="btn-cam-swap" class="touch-btn">CAM</div>
-        <div id="btn-mobile-edit" class="touch-btn">🛠️</div>
     </div>
 
     <div id="axis-fps-global">
         <div style="display:flex; align-items:center; justify-content:space-between;">
             <div style="font-weight:700; color:#00d2ff">DEBUG</div>
-            <div style="font-size:11px; color:#aaa">v5 GTA Character Switch</div>
+            <div style="font-size:11px; color:#aaa">v6 Cinematic Release</div>
         </div>
         <div class="small">FPS: <span id="fps-counter">0</span></div>
 
@@ -103,34 +94,12 @@
         </div>
 
         <div style="margin-top:8px; display:flex; gap:6px;">
-            <button id="attach-axis-btn" class="editor-btn" style="flex:1; padding:6px 8px;">Attach</button>
-            <button id="show-global-axis" class="editor-btn" style="flex:1; padding:6px 8px;">Global</button>
+            <button id="show-global-axis" class="toggle-btn" style="flex:1; padding:6px 8px;">Global</button>
         </div>
 
         <div style="margin-top:8px; display:flex; gap:6px;">
-            <button id="perf-toggle" class="editor-btn" style="flex:1; padding:6px 8px;">Perf Mode</button>
-            <button id="shadow-toggle" class="editor-btn" style="flex:1; padding:6px 8px;">Shadows</button>
-        </div>
-    </div>
-
-    <div id="editor-ui">
-        <div id="editor-bar">
-            <span>🛠️ EDIT MODE</span>
-            <span style="font-weight:normal; font-size:14px; margin-top:2px;">
-                <span class="key">WASD / Joy</span> Fly | Aim & Tap | <span class="key">T</span> Move <span class="key">R</span> Rotate <span class="key">Y</span> Scale
-            </span>
-        </div>
-
-        <div id="editor-panel">
-            <h3 style="margin-top:0; color:#00d2ff">SELECTED OBJECT</h3>
-            <div id="obj-name" style="color:#fff; margin-bottom:10px;">None</div>
-            <button class="editor-btn" onclick="setGizmo('translate')">Move</button>
-            <button class="editor-btn" onclick="setGizmo('rotate')">Rotate</button>
-            <button class="editor-btn" onclick="setGizmo('scale')">Scale</button>
-
-            <hr style="border-color:#333; margin: 15px 0;">
-            <button class="editor-btn" style="width:100%; background:#00d2ff; color:#000; font-weight:bold" onclick="exportData()">💾 GENERATE CODE</button>
-            <textarea id="export-area" readonly placeholder="Select object to get code..."></textarea>
+            <button id="perf-toggle" class="toggle-btn" style="flex:1; padding:6px 8px;">Perf Mode</button>
+            <button id="shadow-toggle" class="toggle-btn" style="flex:1; padding:6px 8px;">Shadows</button>
         </div>
     </div>
 
@@ -145,7 +114,6 @@
         import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
         import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
         import { FXAAShader } from 'three/addons/shaders/FXAAShader.js';
-        import { TransformControls } from 'three/addons/controls/TransformControls.js';
 
         const isMobile = window.innerWidth <= 900 || /Android|webOS|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
@@ -169,6 +137,16 @@
         let characters = [];
         let activeCharIndex = 0;
         
+        // Cinematic Switch System
+        let isSwitching = false;
+        let switchTime = 0;
+        const switchDuration = 3.0;
+        let switchStartCamPos = new THREE.Vector3();
+        let switchTargetCamPos = new THREE.Vector3();
+        let switchStartLookAt = new THREE.Vector3();
+        let switchTargetLookAt = new THREE.Vector3();
+        let switchControlPoint = new THREE.Vector3();
+
         let isGameReady = false;
 
         let performanceMode = isMobile;
@@ -178,12 +156,8 @@
         let bloomPass = null, fxaaPass = null;
         let maxAnisotropy = 1;
 
-        let isEditMode = false;
-        let transformControl;
         let raycaster = new THREE.Raycaster();
         let centerPoint = new THREE.Vector2(0, 0);
-        let selectedObject = null;
-        let editorCameraRotation = { x: 0, y: 0 };
         let collidableMeshList = [];
         
         let downRay = new THREE.Raycaster();
@@ -201,10 +175,10 @@
 
         let pmremGenerator = null;
         let listener;
-        const sounds = { walk: null, run: null, jump: null, land: null };
+        const sounds = { walk: null, run: null, jump: null, land: null, switch: null };
 
         let axisGroup = null, axisX = null, axisY = null, axisZ = null;
-        let axisAttachedToSelected = false, showGlobalAxis = false;
+        let showGlobalAxis = false;
         let fpsCounterEl = null, _frameCount = 0, _lastFpsTime = performance.now();
 
         init();
@@ -264,9 +238,6 @@
                 hdrTexture.dispose();
             }, undefined, function(err) {});
 
-            transformControl = new TransformControls(camera, renderer.domElement);
-            scene.add(transformControl);
-
             createAxisHelpers(5);
 
             const mapLoader = new GLTFLoader();
@@ -302,9 +273,6 @@
             setupInputs();
             loadAssets();
 
-            window.setGizmo = (mode) => transformControl.setMode(mode);
-            window.exportData = generateCode;
-
             fpsCounterEl = document.getElementById('fps-counter');
             bindAxisUI();
 
@@ -315,9 +283,10 @@
             const loader = new FBXLoader();
             try {
                 // Pre-load animations to share across characters
-                const [idleAnim, walkAnim, runAnim, jumpAnim] = await Promise.all([
+                const [idleAnim, walkAnim, runAnim, jumpAnim, fallAnim] = await Promise.all([
                     loader.loadAsync('idle.fbx'), loader.loadAsync('walk.fbx'),
-                    loader.loadAsync('run.fbx'), loader.loadAsync('jump.fbx')
+                    loader.loadAsync('run.fbx'), loader.loadAsync('jump.fbx'),
+                    loader.loadAsync('fall.fbx')
                 ]);
 
                 async function loadCharacterFile(file, name, xOffset) {
@@ -360,7 +329,8 @@
                         'idle': charMixer.clipAction(idleAnim.animations[0]),
                         'walk': charMixer.clipAction(walkAnim.animations[0]),
                         'run': charMixer.clipAction(runAnim.animations[0]),
-                        'jump': charMixer.clipAction(jumpAnim.animations[0])
+                        'jump': charMixer.clipAction(jumpAnim.animations[0]),
+                        'fall': charMixer.clipAction(fallAnim.animations[0])
                     };
                     charActions['jump'].setLoop(THREE.LoopOnce);
                     charActions['jump'].clampWhenFinished = true;
@@ -449,6 +419,7 @@
             loadSound('run', 'run.mp3', true, 0.7);
             loadSound('jump', 'jump.mp3', false, 1.0);
             loadSound('land', 'land.mp3', false, 0.9);
+            loadSound('switch', 'switch.mp3', false, 1.0); // GTA V Transition audio
         }
 
         function createAxisHelpers(baseLength = 5) {
@@ -473,16 +444,12 @@
 
         function bindAxisUI() {
             const axX = document.getElementById('axis-x'), axY = document.getElementById('axis-y'), axZ = document.getElementById('axis-z');
-            const attachBtn = document.getElementById('attach-axis-btn'), globalBtn = document.getElementById('show-global-axis');
+            const globalBtn = document.getElementById('show-global-axis');
             
             axX.addEventListener('change', () => setAxisVisibility(axX.checked, axY.checked, axZ.checked));
             axY.addEventListener('change', () => setAxisVisibility(axX.checked, axY.checked, axZ.checked));
             axZ.addEventListener('change', () => setAxisVisibility(axX.checked, axY.checked, axZ.checked));
 
-            attachBtn.addEventListener('click', () => {
-                axisAttachedToSelected = !axisAttachedToSelected;
-                attachBtn.textContent = axisAttachedToSelected ? 'Attached' : 'Attach';
-            });
             globalBtn.addEventListener('click', () => {
                 showGlobalAxis = !showGlobalAxis;
                 globalBtn.textContent = showGlobalAxis ? 'Global On' : 'Global';
@@ -494,6 +461,50 @@
             document.getElementById('shadow-toggle').textContent = `Shadows: ${shadowsEnabled ? 'ON' : 'OFF'}`;
         }
 
+        function triggerCharacterSwitch() {
+            if (isSwitching || characters.length <= 1) return;
+            
+            isSwitching = true;
+            switchTime = 0;
+            
+            if (sounds.switch) {
+                if (sounds.switch.isPlaying) sounds.switch.stop();
+                sounds.switch.play();
+            }
+            if (sounds.walk && sounds.walk.isPlaying) sounds.walk.stop();
+            if (sounds.run && sounds.run.isPlaying) sounds.run.stop();
+
+            // Store Source Parameters
+            switchStartCamPos.copy(camera.position);
+            const sourceMesh = characters[activeCharIndex].mesh;
+            switchStartLookAt.copy(sourceMesh.position);
+            switchStartLookAt.y += (currentCamIndex === 1) ? 1.7 : 1.5;
+
+            // Clear inputs for seamless transfer
+            keys.w = keys.a = keys.s = keys.d = keys.shift = keys.space = false;
+            joystick.active = false;
+            mobileSprintToggle = false;
+
+            // Update Target
+            activeCharIndex = (activeCharIndex + 1) % characters.length;
+            const targetMesh = characters[activeCharIndex].mesh;
+
+            // Calculate Target Camera Position exactly as updateGameCamera would
+            const offsetX = Math.sin(camState.angleX) * camState.curDist * Math.cos(camState.angleY);
+            const offsetZ = Math.cos(camState.angleX) * camState.curDist * Math.cos(camState.angleY);
+            const offsetY = camState.curDist * Math.sin(camState.angleY);
+            switchTargetCamPos.set(targetMesh.position.x + offsetX, targetMesh.position.y + camState.curHeight + offsetY, targetMesh.position.z + offsetZ);
+            
+            switchTargetLookAt.copy(targetMesh.position);
+            switchTargetLookAt.y += (currentCamIndex === 1) ? 1.7 : 1.5;
+
+            // Quadratic Bezier Control Point (High up in the sky)
+            const dist = switchStartCamPos.distanceTo(switchTargetCamPos);
+            switchControlPoint.copy(switchStartCamPos).lerp(switchTargetCamPos, 0.5);
+            // Height depends on distance to ensure proper arc, with a minimum altitude
+            switchControlPoint.y = Math.max(switchStartCamPos.y, switchTargetCamPos.y) + Math.max(60, dist * 0.4); 
+        }
+
         function setupInputs() {
             const unlockAudio = () => { if (listener && listener.context && listener.context.state === 'suspended') listener.context.resume(); };
             document.addEventListener('click', unlockAudio);
@@ -501,121 +512,55 @@
 
             document.addEventListener('keydown', e => {
                 const map = { KeyW:'w', KeyA:'a', KeyS:'s', KeyD:'d', ShiftLeft:'shift', Space:'space', KeyQ:'q', KeyE:'e' };
-                if (map[e.code]) keys[map[e.code]] = true;
+                if (map[e.code] !== undefined) keys[map[e.code]] = true;
                 
-                // Switch Character Input
-                if (e.code === 'KeyC') {
-                    if(characters.length > 1) {
-                        activeCharIndex = (activeCharIndex + 1) % characters.length;
-                        if (sounds.walk && sounds.walk.isPlaying) sounds.walk.stop();
-                        if (sounds.run && sounds.run.isPlaying) sounds.run.stop();
-                    }
-                }
-                
+                if (e.code === 'KeyC') triggerCharacterSwitch();
                 if (e.code === 'KeyV') currentCamIndex = (currentCamIndex + 1) % CAMERA_MODES.length;
-                if (e.code === 'F9') toggleEditMode();
                 if (e.code === 'KeyL') applyPerformanceSettings(!performanceMode); 
                 if (e.code === 'KeyP') toggleShadows(); 
-                if (isEditMode) {
-                    if (e.code === 'KeyT') transformControl.setMode('translate');
-                    if (e.code === 'KeyR') transformControl.setMode('rotate');
-                    if (e.code === 'KeyY') transformControl.setMode('scale');
-                }
             });
+            
             document.addEventListener('keyup', e => {
                 const map = { KeyW:'w', KeyA:'a', KeyS:'s', KeyD:'d', ShiftLeft:'shift', Space:'space', KeyQ:'q', KeyE:'e' };
-                if (map[e.code]) keys[map[e.code]] = false;
+                if (map[e.code] !== undefined) keys[map[e.code]] = false;
             });
 
             document.addEventListener('mousemove', e => {
                 if (document.pointerLockElement === document.body) {
+                    if (isSwitching) return; // Lock camera look during cinematic
+
                     const sensitivity = 0.002;
-                    if (isEditMode) {
-                        editorCameraRotation.y -= e.movementX * sensitivity;
-                        editorCameraRotation.x -= e.movementY * sensitivity;
-                        editorCameraRotation.x = Math.max(-Math.PI/2, Math.min(Math.PI/2, editorCameraRotation.x));
-                        camera.rotation.order = "YXZ";
-                        camera.rotation.y = editorCameraRotation.y;
-                        camera.rotation.x = editorCameraRotation.x;
-                    } else {
-                        camState.angleX -= e.movementX * sensitivity;
-                        camState.angleY -= e.movementY * sensitivity;
-                        camState.angleY = Math.max(0.1, Math.min(Math.PI / 2.2, camState.angleY));
-                    }
+                    camState.angleX -= e.movementX * sensitivity;
+                    camState.angleY -= e.movementY * sensitivity;
+                    camState.angleY = Math.max(0.1, Math.min(Math.PI / 2.2, camState.angleY));
                 }
             });
 
             document.addEventListener('mousedown', (e) => {
                 if(e.pointerType === "touch" || window.innerWidth <= 900) return; 
-
-                if (isEditMode) {
-                    if (e.target.closest('#editor-panel') || e.target.closest('#axis-fps-global')) return;
-                    if (document.pointerLockElement !== document.body) { document.body.requestPointerLock(); return; }
-                    raycaster.setFromCamera(centerPoint, camera);
-                    const intersects = raycaster.intersectObjects(scene.children, true);
-                    if (intersects.length > 0) {
-                        let target = intersects[0].object;
-                        while (target.parent && target.parent.type !== 'Scene') {
-                            if (target.name === "MyGameMap" || target.name.includes("Character")) break;
-                            target = target.parent;
-                        }
-                        if (target.type !== 'LineSegments' && !target.isTransformControls) selectObject(target);
-                    } else {
-                        transformControl.detach(); selectedObject = null;
-                        document.getElementById('obj-name').innerText = "None";
-                    }
-                } else {
-                    document.body.requestPointerLock();
-                }
+                document.body.requestPointerLock();
             });
 
             const lookZone = document.getElementById('touch-look-zone');
             lookZone.addEventListener('touchstart', e => {
-                if(e.target.classList.contains('touch-btn')) return; 
+                if(e.target.classList.contains('touch-btn') || isSwitching) return; 
                 if (touchLook.id !== null) return;
                 const t = e.changedTouches[0];
                 touchLook.id = t.identifier;
                 touchLook.lastX = t.clientX;
                 touchLook.lastY = t.clientY;
-                
-                if (isEditMode) {
-                    const pointer = new THREE.Vector2();
-                    pointer.x = (t.clientX / window.innerWidth) * 2 - 1;
-                    pointer.y = -(t.clientY / window.innerHeight) * 2 + 1;
-                    raycaster.setFromCamera(pointer, camera);
-                    const intersects = raycaster.intersectObjects(scene.children, true);
-                    if (intersects.length > 0) {
-                        let target = intersects[0].object;
-                        while (target.parent && target.parent.type !== 'Scene') {
-                            if (target.name === "MyGameMap" || target.name.includes("Character")) break;
-                            target = target.parent;
-                        }
-                        if (target.type !== 'LineSegments' && !target.isTransformControls) selectObject(target);
-                    } else {
-                        transformControl.detach(); selectedObject = null;
-                        document.getElementById('obj-name').innerText = "None";
-                    }
-                }
             }, {passive: false});
 
             lookZone.addEventListener('touchmove', e => {
+                if (isSwitching) return;
                 for (let t of e.changedTouches) {
                     if (t.identifier === touchLook.id) {
                         const dx = t.clientX - touchLook.lastX;
                         const dy = t.clientY - touchLook.lastY;
                         const sensitivity = 0.005;
-                        if (isEditMode) {
-                            editorCameraRotation.y -= dx * sensitivity;
-                            editorCameraRotation.x -= dy * sensitivity;
-                            editorCameraRotation.x = Math.max(-Math.PI/2, Math.min(Math.PI/2, editorCameraRotation.x));
-                            camera.rotation.order = "YXZ";
-                            camera.rotation.y = editorCameraRotation.y;
-                            camera.rotation.x = editorCameraRotation.x;
-                        } else {
-                            camState.angleX -= dx * sensitivity;
-                            camState.angleY -= dy * sensitivity;
-                            camState.angleY = Math.max(0.1, Math.min(Math.PI / 2.2, camState.angleY));
-                        }
+                        camState.angleX -= dx * sensitivity;
+                        camState.angleY -= dy * sensitivity;
+                        camState.angleY = Math.max(0.1, Math.min(Math.PI / 2.2, camState.angleY));
                         touchLook.lastX = t.clientX;
                         touchLook.lastY = t.clientY;
                     }
@@ -631,6 +576,7 @@
             let joyRect = joyZone.getBoundingClientRect();
 
             const updateJoy = (x, y) => {
+                if(isSwitching) return;
                 const cx = joyRect.left + joyRect.width / 2;
                 const cy = joyRect.top + joyRect.height / 2;
                 let dx = x - cx; let dy = y - cy;
@@ -644,6 +590,7 @@
 
             joyZone.addEventListener('touchstart', e => {
                 e.preventDefault();
+                if(isSwitching) return;
                 joyRect = joyZone.getBoundingClientRect();
                 const t = e.changedTouches[0];
                 joystick.id = t.identifier;
@@ -670,17 +617,13 @@
             joyZone.addEventListener('touchcancel', endJoy);
 
             const btnJump = document.getElementById('btn-jump');
-            btnJump.addEventListener('touchstart', e => { e.preventDefault(); keys.space = true; btnJump.classList.add('active-toggle'); });
+            btnJump.addEventListener('touchstart', e => { e.preventDefault(); if(!isSwitching) keys.space = true; btnJump.classList.add('active-toggle'); });
             btnJump.addEventListener('touchend', e => { e.preventDefault(); keys.space = false; btnJump.classList.remove('active-toggle'); });
 
             const btnSwitchChar = document.getElementById('btn-switch-char');
             btnSwitchChar.addEventListener('touchstart', e => { 
                 e.preventDefault();
-                if(characters.length > 1) {
-                    activeCharIndex = (activeCharIndex + 1) % characters.length;
-                    if (sounds.walk && sounds.walk.isPlaying) sounds.walk.stop();
-                    if (sounds.run && sounds.run.isPlaying) sounds.run.stop();
-                }
+                triggerCharacterSwitch();
                 btnSwitchChar.classList.add('active-toggle');
             });
             btnSwitchChar.addEventListener('touchend', e => { e.preventDefault(); btnSwitchChar.classList.remove('active-toggle'); });
@@ -688,6 +631,7 @@
             const btnSprint = document.getElementById('btn-sprint');
             btnSprint.addEventListener('touchstart', e => { 
                 e.preventDefault(); 
+                if(isSwitching) return;
                 mobileSprintToggle = !mobileSprintToggle; 
                 btnSprint.classList.toggle('active-toggle', mobileSprintToggle);
             });
@@ -695,11 +639,6 @@
             document.getElementById('btn-cam-swap').addEventListener('touchstart', e => {
                 e.preventDefault();
                 currentCamIndex = (currentCamIndex + 1) % CAMERA_MODES.length;
-            });
-
-            document.getElementById('btn-mobile-edit').addEventListener('touchstart', e => {
-                e.preventDefault();
-                toggleEditMode();
             });
 
             window.addEventListener('resize', () => {
@@ -715,45 +654,6 @@
             });
         }
 
-        function toggleEditMode() {
-            isEditMode = !isEditMode;
-            const ui = document.getElementById('editor-ui');
-            const hud = document.getElementById('hud');
-            const crosshair = document.getElementById('crosshair');
-            const mobEditBtn = document.getElementById('btn-mobile-edit');
-            
-            if (isEditMode) {
-                ui.style.display = 'block'; 
-                if(window.innerWidth > 900) hud.style.display = 'none'; 
-                crosshair.style.display = 'block';
-                mobEditBtn.classList.add('active-toggle');
-                const euler = new THREE.Euler().setFromQuaternion(camera.quaternion, 'YXZ');
-                editorCameraRotation.y = euler.y; editorCameraRotation.x = euler.x;
-                if (characters.length > 0) characters.forEach(c => c.mesh.visible = true);
-            } else {
-                ui.style.display = 'none'; 
-                if(window.innerWidth > 900) hud.style.display = 'block'; 
-                crosshair.style.display = 'none';
-                mobEditBtn.classList.remove('active-toggle');
-                transformControl.detach(); selectedObject = null;
-            }
-        }
-
-        function selectObject(obj) {
-            selectedObject = obj;
-            transformControl.attach(obj);
-            document.getElementById('obj-name').innerText = obj.name || "Unnamed Mesh";
-        }
-
-        function generateCode() {
-            if (!selectedObject) { document.getElementById('export-area').value = "// No object selected"; return; }
-            const p = selectedObject.position; const r = selectedObject.rotation; const s = selectedObject.scale;
-            const code = `${selectedObject.name}.position.set(${p.x.toFixed(2)}, ${p.y.toFixed(2)}, ${p.z.toFixed(2)});\n` +
-                         `${selectedObject.name}.rotation.set(${r.x.toFixed(2)}, ${r.y.toFixed(2)}, ${r.z.toFixed(2)});\n` +
-                         `${selectedObject.name}.scale.set(${s.x.toFixed(2)}, ${s.y.toFixed(2)}, ${s.z.toFixed(2)});`;
-            document.getElementById('export-area').value = code;
-        }
-
         function fadeToAction(charData, name, duration) {
             if (!charData.actions[name] || charData.activeAction === charData.actions[name]) return;
             const prev = charData.activeAction;
@@ -763,7 +663,7 @@
         }
 
         function updatePhysics(dt) {
-            if (characters.length === 0 || isEditMode) return;
+            if (characters.length === 0) return;
             
             for(let i = 0; i < characters.length; i++) {
                 let charData = characters[i];
@@ -775,8 +675,7 @@
                 const right = new THREE.Vector3(Math.cos(camState.angleX), 0, -Math.sin(camState.angleX));
                 let moveDir = new THREE.Vector3(0,0,0);
 
-                if (isActive) {
-                    // Player Control
+                if (isActive && !isSwitching) {
                     isRunning = keys.shift || mobileSprintToggle;
                     if (keys.w) moveDir.add(forward); 
                     if (keys.s) moveDir.sub(forward);
@@ -787,12 +686,10 @@
                         moveDir.addScaledVector(forward, -joystick.y);
                         moveDir.addScaledVector(right, joystick.x);
                     }
-                } else {
-                    // AI Follow Logic
+                } else if (!isActive) {
                     let targetMesh = characters[activeCharIndex].mesh;
                     let dist = charMesh.position.distanceTo(targetMesh.position);
 
-                    // Hysteresis to prevent jittering when reaching the exact stop boundary
                     if (dist > 3.5) charData.isFollowing = true;
                     if (dist < 2.0) charData.isFollowing = false;
 
@@ -801,15 +698,14 @@
                         dirToTarget.y = 0; 
                         dirToTarget.normalize();
                         moveDir.copy(dirToTarget);
-                        isRunning = dist > 6.0; // Sprint if too far behind
+                        isRunning = dist > 6.0; 
                     }
                 }
 
                 const speed = isRunning ? CONFIG.runSpeed : CONFIG.walkSpeed;
                 const isMoving = moveDir.lengthSq() > 0.01;
 
-                // Handle Audio for Active Player
-                if (isActive) {
+                if (isActive && !isSwitching) {
                     if (charData.onGround && !charData.isJumping) {
                         if (isMoving) {
                             if (isRunning) {
@@ -840,8 +736,7 @@
                     if (hits.length > 0 && hits[0].distance < 0.5) isBlocked = true;
                     
                     if (!isBlocked) {
-                        // Normalize length for joystick but apply fully to AI
-                        const appliedLength = isActive ? Math.min(length, 1.0) : 1.0;
+                        const appliedLength = (isActive && !isSwitching) ? Math.min(length, 1.0) : 1.0;
                         charMesh.position.addScaledVector(normalizedDir, speed * appliedLength * dt);
                         
                         const targetRot = Math.atan2(normalizedDir.x, normalizedDir.z);
@@ -852,17 +747,21 @@
                         
                         if (!charData.isJumping && charData.onGround) fadeToAction(charData, isRunning ? 'run' : 'walk', 0.2);
                     } else {
-                        if (!isActive && !charData.isJumping && charData.onGround) fadeToAction(charData, 'idle', 0.2);
+                        if (!charData.isJumping && charData.onGround) fadeToAction(charData, 'idle', 0.2);
                     }
                 } else {
                     if (!charData.isJumping && charData.onGround) fadeToAction(charData, 'idle', 0.2);
                 }
 
-                // Handle Jumping (Only active player for now)
-                if (isActive && keys.space && charData.onGround && !charData.isJumping) {
+                if (isActive && !isSwitching && keys.space && charData.onGround && !charData.isJumping) {
                     charData.velocity.y = CONFIG.jumpForce; charData.onGround = false; charData.isJumping = true;
                     if (sounds.jump) { if (sounds.jump.isPlaying) sounds.jump.stop(); sounds.jump.play(); }
                     fadeToAction(charData, 'jump', 0.1);
+                }
+
+                // Universal Falling Logic Check
+                if (!charData.onGround && charData.velocity.y < -3.0 && !charData.isJumping) {
+                    fadeToAction(charData, 'fall', 0.2);
                 }
 
                 // Gravity & Collision
@@ -902,7 +801,6 @@
             camState.curDist = THREE.MathUtils.lerp(camState.curDist, target.dist, 0.1);
             camState.curHeight = THREE.MathUtils.lerp(camState.curHeight, target.height, 0.1);
             
-            // Only hide the active character if camera is in FPS view
             if (camState.curDist < 0.2) activeMesh.visible = false; else activeMesh.visible = true;
 
             const offsetX = Math.sin(camState.angleX) * camState.curDist * Math.cos(camState.angleY);
@@ -916,42 +814,56 @@
             camera.lookAt(activeMesh.position.x, activeMesh.position.y + lookAtHeight, activeMesh.position.z);
         }
 
-        function updateEditorCamera(dt) {
-            const speed = (keys.shift || mobileSprintToggle) ? 25.0 * dt : 10.0 * dt;
-            const dir = new THREE.Vector3();
-            camera.getWorldDirection(dir);
-            const right = new THREE.Vector3().crossVectors(dir, camera.up).normalize();
-
-            if (keys.w) camera.position.addScaledVector(dir, speed);
-            if (keys.s) camera.position.addScaledVector(dir, -speed);
-            if (keys.a) camera.position.addScaledVector(right, -speed);
-            if (keys.d) camera.position.addScaledVector(right, speed);
+        function handleCinematicSwitchCamera(realDt) {
+            switchTime += realDt;
+            let t = Math.min(switchTime / switchDuration, 1.0);
             
-            if (joystick.active) {
-                camera.position.addScaledVector(dir, speed * -joystick.y);
-                camera.position.addScaledVector(right, speed * joystick.x);
-            }
+            // Smoothstep curve for seamless acceleration/deceleration
+            let easeT = t * t * (3 - 2 * t);
 
-            if (keys.e) camera.position.y += speed;
-            if (keys.q) camera.position.y -= speed;
+            // Interpolate position along Quadratic Bezier Curve
+            const temp1 = new THREE.Vector3().copy(switchStartCamPos).lerp(switchControlPoint, easeT);
+            const temp2 = new THREE.Vector3().copy(switchControlPoint).lerp(switchTargetCamPos, easeT);
+            camera.position.copy(temp1).lerp(temp2, easeT);
+
+            // Interpolate camera LookAt target
+            const currentLookAt = new THREE.Vector3().copy(switchStartLookAt).lerp(switchTargetLookAt, easeT);
+            camera.lookAt(currentLookAt);
+
+            // Cinematic FOV Warp Effect (Widens mid-flight, restores at landing)
+            camera.fov = 60 + Math.sin(easeT * Math.PI) * 35;
+            camera.updateProjectionMatrix();
+
+            if (t >= 1.0) {
+                isSwitching = false;
+                camera.fov = 60;
+                camera.updateProjectionMatrix();
+            }
         }
 
         function animate() {
             requestAnimationFrame(animate);
             if (!isGameReady) return;
-            const dt = Math.min(clock.getDelta(), 0.1);
             
-            characters.forEach(c => c.mixer.update(dt));
+            const realDt = Math.min(clock.getDelta(), 0.1);
+            
+            // Slow motion physics effect during switch (10% normal speed)
+            const gameTimeScale = isSwitching ? 0.1 : 1.0;
+            const scaledDt = realDt * gameTimeScale;
+            
+            characters.forEach(c => c.mixer.update(scaledDt));
+            updatePhysics(scaledDt); 
+
+            if (isSwitching) {
+                handleCinematicSwitchCamera(realDt);
+            } else {
+                updateGameCamera();
+            }
 
             updateFps();
 
-            if (isEditMode) updateEditorCamera(dt);
-            else { updatePhysics(dt); updateGameCamera(); }
-
-            if (axisAttachedToSelected && axisGroup && selectedObject) {
-                axisGroup.position.copy(selectedObject.getWorldPosition(new THREE.Vector3()));
-                axisGroup.quaternion.copy(selectedObject.getWorldQuaternion(new THREE.Quaternion()));
-                axisGroup.visible = axisX.visible || axisY.visible || axisZ.visible || showGlobalAxis;
+            if (axisGroup) {
+                axisGroup.visible = showGlobalAxis;
             }
 
             if (composer && composerEnabled && !performanceMode && !isMobile) composer.render();
