@@ -87,6 +87,9 @@
         </div>
         <div class="small">FPS: <span id="fps-counter">0</span></div>
 
+        <!-- NEW POSITION TRACKER (Find your coords easily) -->
+        <div class="small" style="color: #ffaa00; margin-top: 6px;">POS: <span id="pos-display">0.00, 0.00, 0.00</span></div>
+
         <div style="margin-top:8px;">
             <label><input type="checkbox" id="axis-x"> <span style="color:#ff4444">X</span></label>
             <label><input type="checkbox" id="axis-y"> <span style="color:#44ff44">Y</span></label>
@@ -121,6 +124,13 @@
         const CONFIG = {
             walkSpeed: 2.0, runSpeed: 6.5, gravity: -9.8 * 2.5, jumpForce: 8.0, 
             rotSpeed: 8.0, camSmoothness: 0.1
+        };
+
+        // --- INITIAL SPAWN POSITIONS ---
+        // Change these X, Y, Z coordinates to set where characters permanently spawn in the code
+        const SPAWN_POINTS = {
+            player1: new THREE.Vector3(70, -53.93, -100.96),
+            player2: new THREE.Vector3(75, -53.93, -100.96)
         };
 
         const CAMERA_MODES = [
@@ -244,8 +254,8 @@
             mapLoader.load('map.glb', (gltf) => {
                 const map = gltf.scene;
                 map.name = "MyGameMap";
-                map.position.set(0, -40, 0);
-                map.scale.set(1.5, 1.5, 1.5);
+                map.position.set(-100, -60, 300);
+                map.scale.set(100, 100, 100);
 
                 map.traverse((child) => {
                     if (child.isMesh) {
@@ -289,7 +299,7 @@
                     loader.loadAsync('fall.fbx')
                 ]);
 
-                async function loadCharacterFile(file, name, xOffset) {
+                async function loadCharacterFile(file, name, spawnPosition) {
                     let charMesh;
                     try {
                         charMesh = await loader.loadAsync(file);
@@ -299,7 +309,7 @@
                     }
                     
                     charMesh.name = name;
-                    charMesh.position.set(xOffset, 5, 0);
+                    charMesh.position.copy(spawnPosition); // Set initial spawn coordinates from code
 
                     const box = new THREE.Box3().setFromObject(charMesh);
                     const size = box.getSize(new THREE.Vector3());
@@ -337,7 +347,8 @@
 
                     const charData = {
                         mesh: charMesh, mixer: charMixer, actions: charActions, activeAction: charActions['idle'],
-                        velocity: new THREE.Vector3(), onGround: false, isJumping: false, isFollowing: false
+                        velocity: new THREE.Vector3(), onGround: false, isJumping: false, isFollowing: false,
+                        spawnPoint: spawnPosition.clone() // Save assigned spawn point for falling resets
                     };
 
                     charMixer.addEventListener('finished', (e) => { if (e.action === charActions['jump']) charData.isJumping = false; });
@@ -345,9 +356,9 @@
                     characters.push(charData);
                 }
 
-                // Load Player 1 and Player 2
-                await loadCharacterFile('character.fbx', 'Player1_Character', 0);
-                await loadCharacterFile('2ndcharacter.fbx', 'Player2_Character', 3);
+                // Load Player 1 and Player 2 and place them at their SPAWN_POINTS
+                await loadCharacterFile('character.fbx', 'Player1_Character', SPAWN_POINTS.player1);
+                await loadCharacterFile('2ndcharacter.fbx', 'Player2_Character', SPAWN_POINTS.player2);
 
                 document.getElementById('loading').style.display = 'none';
                 isGameReady = true;
@@ -788,7 +799,11 @@
                     }
                 } else {
                     charData.onGround = false;
-                    if (charMesh.position.y < -50) charMesh.position.set(isActive?0:2, 10, isActive?0:-2);
+                    // Reset to the configured SPAWN_POINT if they fall off the map
+                    if (charMesh.position.y < -50) {
+                        charMesh.position.copy(charData.spawnPoint);
+                        charData.velocity.y = 0;
+                    }
                 }
             }
         }
@@ -858,6 +873,12 @@
                 handleCinematicSwitchCamera(realDt);
             } else {
                 updateGameCamera();
+            }
+
+            // --- UPDATE LIVE COORDINATES ---
+            if (characters.length > 0) {
+                const pos = characters[activeCharIndex].mesh.position;
+                document.getElementById('pos-display').textContent = `${pos.x.toFixed(2)}, ${pos.y.toFixed(2)}, ${pos.z.toFixed(2)}`;
             }
 
             updateFps();
