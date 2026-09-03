@@ -7,7 +7,7 @@
     <style>
         body { margin: 0; overflow: hidden; background-color: #000; font-family: 'Segoe UI', sans-serif; user-select: none; touch-action: none; }
         
-        #ui-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10; }
+        #ui-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10; transition: opacity 0.3s; }
         #crosshair { display: none; position: absolute; top: 50%; left: 50%; width: 20px; height: 20px; transform: translate(-50%, -50%); pointer-events: none; z-index: 100; }
         #crosshair::before, #crosshair::after { content: ''; position: absolute; background: rgba(0, 210, 255, 0.9); box-shadow: 0 0 4px #00d2ff; }
         #crosshair::before { top: 9px; left: 0; width: 20px; height: 2px; } 
@@ -34,7 +34,7 @@
         
         #hud { position: absolute; bottom: 30px; left: 30px; color: rgba(255,255,255,0.9); font-size: 14px; background: rgba(0,0,0,0.5); padding: 15px 25px; border-radius: 8px; border-left: 4px solid #00d2ff; display: block; }
         
-        #axis-fps-global { position: fixed; top: 10px; left: 10px; z-index: 9000; pointer-events: auto; width: 230px; background: rgba(6,10,15,0.7); border: 1px solid rgba(50, 50, 50, 0.8); padding: 8px; border-radius: 8px; color: #ddd; font-family: monospace; font-size: 12px; backdrop-filter: blur(6px); box-shadow: 0 6px 18px rgba(0,0,0,0.6); }
+        #axis-fps-global { position: fixed; top: 10px; left: 10px; z-index: 9000; pointer-events: auto; width: 230px; background: rgba(6,10,15,0.7); border: 1px solid rgba(50, 50, 50, 0.8); padding: 8px; border-radius: 8px; color: #ddd; font-family: monospace; font-size: 12px; backdrop-filter: blur(6px); box-shadow: 0 6px 18px rgba(0,0,0,0.6); transition: opacity 0.3s; }
         #axis-fps-global label { margin-right: 8px; display: inline-flex; align-items: center; gap:6px; cursor: pointer; }
         #fps-counter { color: #00d2ff; font-weight:700; margin-left:6px; }
         #axis-fps-global .small { font-size:11px; color:#bbb; margin-top:6px; display:block; }
@@ -42,11 +42,39 @@
         .toggle-btn { background: #333; color: white; border: 1px solid #555; padding: 5px 10px; cursor: pointer; border-radius: 4px; margin-right: 5px; }
         .toggle-btn:hover { background: #555; }
 
+        /* --- EMOTE WHEEL UI --- */
+        #emote-wheel {
+            display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 260px; height: 260px; border-radius: 50%; background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(8px); z-index: 200; pointer-events: auto; box-shadow: 0 0 20px rgba(0, 212, 255, 0.2);
+        }
+        .emote-btn-item {
+            position: absolute; width: 50px; height: 50px;
+            top: 50%; left: 50%; margin-top: -25px; margin-left: -25px;
+            border-radius: 50%; background: rgba(0, 212, 255, 0.2); border: 2px solid #00d2ff;
+            color: #fff; display: flex; align-items: center; justify-content: center;
+            font-weight: bold; cursor: pointer; transition: all 0.2s; text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+        }
+        .emote-btn-item:hover { background: rgba(0, 212, 255, 0.7); transform: scale(1.15); box-shadow: 0 0 10px #00d2ff; }
+        #emote-close-btn {
+            position: absolute; top: 50%; left: 50%; width: 44px; height: 44px;
+            margin-top: -22px; margin-left: -22px; border-radius: 50%;
+            background: rgba(255, 50, 50, 0.4); border: 2px solid #ff4444;
+            color: white; display: flex; align-items: center; justify-content: center;
+            font-weight: bold; cursor: pointer; transition: all 0.2s;
+        }
+        #emote-close-btn:hover { background: rgba(255, 50, 50, 0.8); box-shadow: 0 0 10px #ff4444; }
+
+        /* --- CLEAN RECORDING MODE (M KEY) --- */
+        .clean-mode #ui-layer, .clean-mode #mobile-controls, .clean-mode #axis-fps-global {
+            display: none !important; opacity: 0 !important; pointer-events: none !important;
+        }
+
         /* Hide the blue interact box completely across all platforms */
         #interact-hint { display: none !important; }
 
         /* --- MOBILE CONTROLS UI --- */
-        #mobile-controls { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 15; }
+        #mobile-controls { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 15; transition: opacity 0.3s; }
         .touch-btn { position: absolute; pointer-events: auto; background: rgba(0, 0, 0, 0.4); border: 2px solid rgba(255, 255, 255, 0.3); border-radius: 50%; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; backdrop-filter: blur(4px); text-shadow: 0 1px 3px rgba(0,0,0,0.8); }
         .touch-btn:active, .touch-btn.active-toggle { background: rgba(0, 212, 255, 0.6); border-color: #00d2ff; }
         
@@ -58,6 +86,7 @@
         #btn-jump { bottom: 40px; right: 40px; width: 70px; height: 70px; font-size: 14px; }
         #btn-switch-char { bottom: 40px; right: 130px; width: 60px; height: 60px; font-size: 10px; text-align: center; line-height: 1.1; }
         #btn-sprint { bottom: 130px; right: 80px; width: 55px; height: 55px; font-size: 12px; }
+        #btn-emote-mobile { bottom: 130px; right: 20px; width: 55px; height: 55px; font-size: 11px; display: none; }
         #btn-cam-swap { top: 20px; right: 20px; width: 50px; height: 50px; font-size: 12px; }
         
         /* Minimal Modern 'F' Button (Only shows near car) */
@@ -86,6 +115,7 @@
             #mobile-controls { display: block; }
             #hud { display: none !important; }
             #axis-fps-global { display: none !important; }
+            #btn-emote-mobile { display: flex; }
         }
     </style>
     
@@ -94,7 +124,8 @@
         {
             "imports": {
                 "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
-                "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+                "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/",
+                "three-mesh-bvh": "https://unpkg.com/three-mesh-bvh@0.7.3/build/index.module.js"
             }
         }
     </script>
@@ -109,10 +140,20 @@
             <div id="start-btn">PLAY</div>
         </div>
         
-        <!-- Elements kept in HTML so JavaScript bindings don't crash -->
+        <!-- EMOTE WHEEL UI -->
+        <div id="emote-wheel">
+            <div id="emote-close-btn">X</div>
+            <div class="emote-btn-item" style="transform: rotate(-90deg) translate(90px) rotate(90deg);" data-emote="d1">D1</div>
+            <div class="emote-btn-item" style="transform: rotate(-30deg) translate(90px) rotate(30deg);" data-emote="d2">D2</div>
+            <div class="emote-btn-item" style="transform: rotate(30deg) translate(90px) rotate(-30deg);" data-emote="d3">D3</div>
+            <div class="emote-btn-item" style="transform: rotate(90deg) translate(90px) rotate(-90deg);" data-emote="d4">D4</div>
+            <div class="emote-btn-item" style="transform: rotate(150deg) translate(90px) rotate(-150deg);" data-emote="d5">D5</div>
+            <div class="emote-btn-item" style="transform: rotate(210deg) translate(90px) rotate(-210deg);" data-emote="d6">D6</div>
+        </div>
+
         <div id="interact-hint"></div>
         <div id="hud">
-            <b>WASD</b> Move/Drive | <b>SHIFT</b> Sprint | <b>SPACE</b> Jump/Brake | <b>C</b> Switch Char | <b>V</b> Change Camera | <b>F</b> Enter/Exit Car | <b>E</b> Horn
+            <b>WASD</b> Move/Drive | <b>SHIFT</b> Sprint | <b>SPACE</b> Jump | <b>C</b> Switch Char | <b>V</b> Camera | <b>F</b> Car | <b>E</b> Emote/Horn | <b>L</b> Cinematic Cam | <b>M</b> Hide UI
         </div>
     </div>
 
@@ -123,16 +164,17 @@
         <div id="btn-jump" class="touch-btn">JUMP</div>
         <div id="btn-switch-char" class="touch-btn">SWITCH<br>CHAR</div>
         <div id="btn-sprint" class="touch-btn">SPRINT</div>
+        <div id="btn-emote-mobile" class="touch-btn">EMOTE</div>
         <div id="btn-cam-swap" class="touch-btn">CAM</div>
         <div id="btn-interact" class="touch-btn">F</div>
         <div id="btn-horn" class="touch-btn">HORN</div>
     </div>
 
-    <!-- PC Coordinate Shower / Debug UI (Hidden automatically on Mobile via CSS) -->
+    <!-- PC Coordinate Shower / Debug UI -->
     <div id="axis-fps-global">
         <div style="display:flex; align-items:center; justify-content:space-between;">
             <div style="font-weight:700; color:#00d2ff">DEBUG</div>
-            <div style="font-size:11px; color:#aaa">v9 Audio & Preload Update</div>
+            <div style="font-size:11px; color:#aaa">v11 Engine Opt. (Max Graphics)</div>
         </div>
         <div class="small">FPS: <span id="fps-counter">0</span></div>
         <div class="small" style="color: #ffaa00; margin-top: 6px;">POS: <span id="pos-display">0.00, 0.00, 0.00</span></div>
@@ -161,7 +203,11 @@
         import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
         import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
         import { FXAAShader } from 'three/addons/shaders/FXAAShader.js';
+        import { computeBoundsTree, disposeBoundsTree, acceleratedRaycast } from 'three-mesh-bvh';
 
+        THREE.BufferGeometry.prototype.computeBoundsTree = computeBoundsTree;
+        THREE.BufferGeometry.prototype.disposeBoundsTree = disposeBoundsTree;
+        THREE.Mesh.prototype.raycast = acceleratedRaycast;
         THREE.Cache.enabled = true;
 
         const isMobile = window.innerWidth <= 900 || /Android|webOS|iPhone|iPad|iPod/i.test(navigator.userAgent);
@@ -172,19 +218,13 @@
         };
 
         const CAR_CONFIG = {
-            spawnPos: new THREE.Vector3(72, -53.93, -95), 
-            scale: 30, 
-            maxSpeed: 30.0,
-            acceleration: 15.0,
-            braking: 25.0,
-            friction: 5.0,
-            steerSpeed: 2.0,
-            interactionDist: 4.0
+            spawnPos: new THREE.Vector3(72, -53.93, -95), scale: 30, 
+            maxSpeed: 30.0, acceleration: 15.0, braking: 25.0, friction: 5.0,
+            steerSpeed: 2.0, interactionDist: 4.0
         };
 
         const SEAT_POSITIONS = {
-            driver: new THREE.Vector3(0.1, 0.7, 0.2),     
-            passenger: new THREE.Vector3(-0.9, 0.7, 0.3)    
+            driver: new THREE.Vector3(0.1, 0.7, 0.2), passenger: new THREE.Vector3(-0.9, 0.7, 0.3)    
         };
 
         const CAR_CAMERA_MODES = [
@@ -199,23 +239,31 @@
         };
 
         const CAMERA_MODES = [
-            { name: "TPS_CLOSE", dist: 1.2, height: 1.5 },
-            { name: "FPS",       dist: 0.0, height: 1.65 },
-            { name: "TPS_MID",   dist: 2.2, height: 1.7 }, 
-            { name: "TPS_FAR",   dist: 4.5, height: 2.2 }
+            { name: "TPS_CLOSE", dist: 1.2, height: 1.5 }, { name: "FPS", dist: 0.0, height: 1.65 },
+            { name: "TPS_MID", dist: 2.2, height: 1.7 }, { name: "TPS_FAR", dist: 4.5, height: 2.2 }
         ];
         
         let currentCamIndex = 2;
         let currentCarCamIndex = 1; 
 
         let scene, camera, renderer, composer, clock;
-        
         let characters = [];
         let activeCharIndex = 0;
         
         let carData = {
             mesh: null, mixer: null, driveAction: null, active: false, speed: 0, steerAngle: 0
         };
+
+        const EMOTE_NAMES = ['d1', 'd2', 'd3', 'd4', 'd5', 'd6'];
+        let emoteClips = {};
+        let isEmoting = false;
+        let isEmoteWheelOpen = false;
+        let emoteSounds = {};
+        let currentEmoteSound = null;
+
+        let isCinematicMode = false;
+        let cinematicAngle = 0;
+        let isUIVisible = true;
 
         let isSwitching = false;
         let switchTime = 0;
@@ -227,7 +275,6 @@
         let switchControlPoint = new THREE.Vector3();
 
         let isGameReady = false;
-
         let performanceMode = isMobile;
         let shadowsEnabled = !isMobile;
         let composerEnabled = !isMobile;
@@ -238,12 +285,9 @@
         let collidableMeshList = []; 
         let terrainMeshList = []; 
         
-        let downRay = new THREE.Raycaster();
-        downRay.far = 4.0;
-        let forwardRay = new THREE.Raycaster();
-        forwardRay.far = 1.5; 
-        let carRay = new THREE.Raycaster(); 
-        carRay.far = 3.0; 
+        let downRay = new THREE.Raycaster(); downRay.far = 4.0; downRay.firstHitOnly = true; 
+        let forwardRay = new THREE.Raycaster(); forwardRay.far = 1.5; forwardRay.firstHitOnly = true; 
+        let carRay = new THREE.Raycaster(); carRay.far = 3.0; carRay.firstHitOnly = true;
 
         const keys = { w: false, a: false, s: false, d: false, shift: false, space: false, q: false, e: false, f: false };
         const camState = { angleX: 0, angleY: Math.PI / 8, curDist: 3.0, curHeight: 1.9 };
@@ -255,12 +299,21 @@
         let pmremGenerator = null;
         let listener;
         const sounds = {}; 
-        
         let engineState = 'off'; 
 
         let axisGroup = null, axisX = null, axisY = null, axisZ = null;
         let showGlobalAxis = false;
         let fpsCounterEl = null, _frameCount = 0, _lastFpsTime = performance.now();
+        let _lastDOMUpdate = 0; 
+
+        const _vDir = new THREE.Vector3();
+        const _vHit = new THREE.Vector3();
+        const _vTarget = new THREE.Vector3();
+        const _vForward = new THREE.Vector3();
+        const _vRight = new THREE.Vector3();
+        const _vDown = new THREE.Vector3(0, -1, 0); 
+        const _vTemp1 = new THREE.Vector3();
+        const _vTemp2 = new THREE.Vector3();
 
         const loadingManager = new THREE.LoadingManager();
 
@@ -336,7 +389,11 @@
                     if (child.isMesh) {
                         child.castShadow = shadowsEnabled;
                         child.receiveShadow = true;
-                        
+                        child.matrixAutoUpdate = false;
+                        child.updateMatrix();
+
+                        if (child.geometry) child.geometry.computeBoundsTree();
+
                         collidableMeshList.push(child);
                         terrainMeshList.push(child);
 
@@ -363,7 +420,6 @@
 
             fpsCounterEl = document.getElementById('fps-counter');
             bindAxisUI();
-
             applyPerformanceSettings(performanceMode);
         }
 
@@ -403,7 +459,7 @@
             const gltfLoader = new GLTFLoader(loadingManager);
 
             try {
-                const [idleAnim, walkAnim, runAnim, jumpAnim, fallAnim, driverAnim, passengerAnim] = await Promise.all([
+                const baseAnimPromises = [
                     loader.loadAsync('idle.fbx').catch(() => null), 
                     loader.loadAsync('walk.fbx').catch(() => null),
                     loader.loadAsync('run.fbx').catch(() => null), 
@@ -411,7 +467,24 @@
                     loader.loadAsync('fall.fbx').catch(() => null),
                     loader.loadAsync('driver.fbx').catch(() => null),
                     loader.loadAsync('passenger.fbx').catch(() => null)
-                ]);
+                ];
+
+                const emotePromises = EMOTE_NAMES.map(name => 
+                    loader.loadAsync(`${name}.fbx`).catch(e => {
+                        console.warn(`Emote ${name}.fbx failed to load.`);
+                        return null;
+                    })
+                );
+
+                const baseAnims = await Promise.all(baseAnimPromises);
+                const [idleAnim, walkAnim, runAnim, jumpAnim, fallAnim, driverAnim, passengerAnim] = baseAnims;
+                
+                const emoteAnims = await Promise.all(emotePromises);
+                emoteAnims.forEach((fbx, i) => {
+                    if (fbx && fbx.animations && fbx.animations.length > 0) {
+                        emoteClips[EMOTE_NAMES[i]] = fbx.animations[0];
+                    }
+                });
 
                 async function loadCharacterFile(file, name, spawnPosition) {
                     let charMesh;
@@ -460,6 +533,12 @@
                         'passenger': (passengerAnim && passengerAnim.animations.length > 0) ? charMixer.clipAction(passengerAnim.animations[0]) : (idleAnim ? charMixer.clipAction(idleAnim.animations[0]) : null)
                     };
                     
+                    EMOTE_NAMES.forEach(emoteName => {
+                        if (emoteClips[emoteName]) {
+                            charActions[emoteName] = charMixer.clipAction(emoteClips[emoteName]);
+                        }
+                    });
+
                     if (charActions['jump']) {
                         charActions['jump'].setLoop(THREE.LoopOnce);
                         charActions['jump'].clampWhenFinished = true;
@@ -502,6 +581,7 @@
                     if (c.isMesh) { 
                         c.castShadow = true; 
                         c.receiveShadow = true; 
+                        if (c.geometry) { c.geometry.computeBoundsTree(); }
                         collidableMeshList.push(c); 
                     }
                 });
@@ -520,6 +600,110 @@
                 }
 
             } catch (err) { console.error(err); }
+        }
+
+        function toggleEmoteWheel() {
+            if (carData.active) return; // Prevent emotes while in car
+            isEmoteWheelOpen = !isEmoteWheelOpen;
+            const wheel = document.getElementById('emote-wheel');
+            wheel.style.display = isEmoteWheelOpen ? 'block' : 'none';
+            if (isEmoteWheelOpen) {
+                document.exitPointerLock();
+            } else {
+                if (!isMobile) document.body.requestPointerLock();
+            }
+        }
+
+        function startEmote(name) {
+            if (!emoteClips[name] || characters.length < 2) return;
+            
+            isEmoteWheelOpen = false;
+            document.getElementById('emote-wheel').style.display = 'none';
+            if (!isMobile) document.body.requestPointerLock();
+
+            isEmoting = true;
+            cinematicAngle = 0; // Reset orbit angle for L-key camera
+
+            // Handle Optional Music seamlessly
+            if (currentEmoteSound && currentEmoteSound.isPlaying) {
+                currentEmoteSound.stop();
+            }
+            if (emoteSounds[name] && emoteSounds[name].buffer) {
+                currentEmoteSound = emoteSounds[name];
+                currentEmoteSound.play();
+            } else {
+                currentEmoteSound = null;
+            }
+
+            // Automatic Grounded Side-by-Side Positioning
+            const activeChar = characters[activeCharIndex];
+            const basePos = activeChar.mesh.position.clone();
+            const baseRot = activeChar.mesh.rotation.y;
+            
+            // Calculate right vector to place characters side-by-side
+            const rightVector = new THREE.Vector3(1, 0, 0).applyAxisAngle(new THREE.Vector3(0, 1, 0), baseRot);
+
+            characters.forEach((c, index) => {
+                if (!c.preEmotePos) c.preEmotePos = new THREE.Vector3();
+                c.preEmotePos.copy(c.mesh.position);
+                c.preEmoteRot = c.mesh.rotation.y;
+                
+                c.velocity.set(0, 0, 0);
+                c.isFollowing = false;
+                
+                // Offset: Active char to the left (-0.8), follower to the right (+0.8)
+                const sideOffset = (index - (characters.length - 1) / 2) * 1.6; 
+                const targetPos = basePos.clone().add(rightVector.clone().multiplyScalar(sideOffset));
+
+                // Snap precisely to ground so they don't clip through map
+                const rayPos = targetPos.clone();
+                rayPos.y += 2.0;
+                downRay.set(rayPos, _vDown);
+                const hits = downRay.intersectObjects(terrainMeshList, false);
+                if (hits.length > 0) {
+                    targetPos.y = hits[0].point.y;
+                }
+
+                c.mesh.position.copy(targetPos);
+                c.mesh.rotation.y = baseRot;
+                
+                // Play synchronous animations
+                if (c.actions[name]) {
+                    const prev = c.activeAction;
+                    c.activeAction = c.actions[name];
+                    if (prev && prev !== c.activeAction) prev.fadeOut(0.2);
+                    
+                    // Force time to 0 to prevent drift
+                    c.activeAction.reset().fadeIn(0.2).play();
+                    c.activeAction.time = 0; 
+                }
+            });
+        }
+
+        function cancelEmote() {
+            if (!isEmoting) return;
+            isEmoting = false;
+            if (isCinematicMode) isCinematicMode = false;
+            
+            // Stop looping optional audio
+            if (currentEmoteSound && currentEmoteSound.isPlaying) {
+                currentEmoteSound.stop();
+                currentEmoteSound = null;
+            }
+            
+            characters.forEach((c) => {
+                // Restore pre-emote positions cleanly
+                if(c.preEmotePos) {
+                    c.mesh.position.copy(c.preEmotePos);
+                    c.mesh.rotation.y = c.preEmoteRot;
+                }
+                fadeToAction(c, 'idle', 0.2);
+            });
+        }
+
+        function toggleUI() {
+            isUIVisible = !isUIVisible;
+            document.body.classList.toggle('clean-mode', !isUIVisible);
         }
 
         function setupPostProcessing() {
@@ -579,12 +763,25 @@
             camera.add(listener);
             const audioLoader = new THREE.AudioLoader(loadingManager);
             
+            // Un-tracked audio loader allows MP3s to silently fail without halting game load
+            const optionalAudioLoader = new THREE.AudioLoader(); 
+            
             function loadSound(name, file, loop = false, volume = 1.0) {
                 const sound = new THREE.Audio(listener);
                 audioLoader.load(file, buffer => { 
                     sound.setBuffer(buffer); sound.setLoop(loop); sound.setVolume(volume); 
                     sounds[name] = sound; 
                 }, undefined, () => {});
+            }
+
+            function loadOptionalSound(name, file) {
+                const sound = new THREE.Audio(listener);
+                optionalAudioLoader.load(file, buffer => {
+                    sound.setBuffer(buffer); sound.setLoop(true); sound.setVolume(0.8);
+                    emoteSounds[name] = sound;
+                }, undefined, () => {
+                    // Silently ignore missing MP3 files so the game doesn't crash
+                });
             }
             
             loadSound('walk', 'walk.mp3', true, 0.4);
@@ -599,6 +796,9 @@
             loadSound('car_move', 'car_move.mp3', true, 0.0);
             loadSound('car_reverse', 'car_reverse.mp3', true, 0.0);
             loadSound('car_horn', 'car_horn.mp3', false, 1.0);
+
+            // Fetch optional MP3s in the background
+            EMOTE_NAMES.forEach(name => loadOptionalSound(name, `${name}.mp3`));
         }
 
         function createAxisHelpers(baseLength = 5) {
@@ -643,6 +843,8 @@
         function toggleCarInteraction() {
             if (!carData.mesh || isSwitching || characters.length === 0) return;
             
+            if (isEmoting) cancelEmote(); 
+            
             const activeChar = characters[activeCharIndex];
 
             if (carData.active) {
@@ -652,8 +854,9 @@
                 
                 activeChar.inCar = false;
                 activeChar.mesh.visible = true;
-                const exitOffset = new THREE.Vector3(2.5, 0, 0).applyQuaternion(carData.mesh.quaternion);
-                activeChar.mesh.position.copy(carData.mesh.position).add(exitOffset);
+                
+                _vTemp1.set(2.5, 0, 0).applyQuaternion(carData.mesh.quaternion);
+                activeChar.mesh.position.copy(carData.mesh.position).add(_vTemp1);
                 activeChar.mesh.position.y += 1.0; 
                 activeChar.mesh.rotation.set(0, carData.mesh.rotation.y, 0);
                 
@@ -661,8 +864,8 @@
                     if (idx !== activeCharIndex && c.inCar) {
                         c.inCar = false;
                         c.mesh.visible = true;
-                        const sideOffset = new THREE.Vector3(-2.5, 0, 0).applyQuaternion(carData.mesh.quaternion);
-                        c.mesh.position.copy(carData.mesh.position).add(sideOffset);
+                        _vTemp2.set(-2.5, 0, 0).applyQuaternion(carData.mesh.quaternion);
+                        c.mesh.position.copy(carData.mesh.position).add(_vTemp2);
                         c.mesh.position.y += 1.0;
                         c.mesh.rotation.set(0, carData.mesh.rotation.y, 0);
                     }
@@ -686,7 +889,7 @@
         }
 
         function triggerCharacterSwitch() {
-            if (isSwitching || characters.length <= 1) return;
+            if (isSwitching || isEmoting || characters.length <= 1) return;
 
             if (carData.active) {
                 activeCharIndex = (activeCharIndex + 1) % characters.length;
@@ -740,10 +943,26 @@
                 if (e.code === 'KeyF') toggleCarInteraction();
                 if (e.code === 'KeyC') triggerCharacterSwitch();
                 
+                // M: Toggle UI visibility
+                if (e.code === 'KeyM') toggleUI();
+
+                // L: Cinematic Camera Mode
+                if (e.code === 'KeyL') {
+                    if (isEmoting) isCinematicMode = !isCinematicMode;
+                    else isCinematicMode = false;
+                }
+
                 if (e.code === 'KeyE') {
-                    if (carData.active && sounds.car_horn && sounds.car_horn.buffer) {
-                        if (sounds.car_horn.isPlaying) sounds.car_horn.stop();
-                        sounds.car_horn.play();
+                    if (carData.active) {
+                        // Car Horn
+                        if (sounds.car_horn && sounds.car_horn.buffer) {
+                            if (sounds.car_horn.isPlaying) sounds.car_horn.stop();
+                            sounds.car_horn.play();
+                        }
+                    } else {
+                        // Emote Wheel
+                        if (isEmoting) cancelEmote();
+                        else toggleEmoteWheel();
                     }
                 }
                 
@@ -754,7 +973,7 @@
                         currentCamIndex = (currentCamIndex + 1) % CAMERA_MODES.length;
                     }
                 }
-                if (e.code === 'KeyL') applyPerformanceSettings(!performanceMode); 
+                if (e.code === 'KeyO') applyPerformanceSettings(!performanceMode); 
                 if (e.code === 'KeyP') toggleShadows(); 
             });
             
@@ -777,8 +996,25 @@
 
             document.addEventListener('mousedown', (e) => {
                 if(e.pointerType === "touch" || window.innerWidth <= 900) return; 
+                if(isEmoteWheelOpen) return;
                 document.body.requestPointerLock();
             });
+
+            // Emote Wheel DOM Bindings
+            document.querySelectorAll('.emote-btn-item').forEach(btn => {
+                btn.addEventListener('click', (e) => { startEmote(e.target.getAttribute('data-emote')); });
+                btn.addEventListener('touchstart', (e) => { e.preventDefault(); startEmote(e.target.getAttribute('data-emote')); }, {passive: false});
+            });
+            document.getElementById('emote-close-btn').addEventListener('click', toggleEmoteWheel);
+            document.getElementById('emote-close-btn').addEventListener('touchstart', (e) => { e.preventDefault(); toggleEmoteWheel(); }, {passive: false});
+
+            const btnEmoteMobile = document.getElementById('btn-emote-mobile');
+            btnEmoteMobile.addEventListener('touchstart', e => {
+                e.preventDefault();
+                if (isEmoting) cancelEmote(); else toggleEmoteWheel();
+                btnEmoteMobile.classList.add('active-toggle');
+            });
+            btnEmoteMobile.addEventListener('touchend', e => { e.preventDefault(); btnEmoteMobile.classList.remove('active-toggle'); });
 
             const lookZone = document.getElementById('touch-look-zone');
             lookZone.addEventListener('touchstart', e => {
@@ -856,12 +1092,13 @@
             joyZone.addEventListener('touchcancel', endJoy);
 
             const btnJump = document.getElementById('btn-jump');
-            btnJump.addEventListener('touchstart', e => { e.preventDefault(); if(!isSwitching) keys.space = true; btnJump.classList.add('active-toggle'); });
+            btnJump.addEventListener('touchstart', e => { e.preventDefault(); if(!isSwitching && !isEmoting) keys.space = true; btnJump.classList.add('active-toggle'); });
             btnJump.addEventListener('touchend', e => { e.preventDefault(); keys.space = false; btnJump.classList.remove('active-toggle'); });
 
             const btnSwitchChar = document.getElementById('btn-switch-char');
             btnSwitchChar.addEventListener('touchstart', e => { 
                 e.preventDefault();
+                if(isEmoting) return;
                 triggerCharacterSwitch();
                 btnSwitchChar.classList.add('active-toggle');
             });
@@ -870,7 +1107,7 @@
             const btnSprint = document.getElementById('btn-sprint');
             btnSprint.addEventListener('touchstart', e => { 
                 e.preventDefault(); 
-                if(isSwitching) return;
+                if(isSwitching || isEmoting) return;
                 mobileSprintToggle = !mobileSprintToggle; 
                 btnSprint.classList.toggle('active-toggle', mobileSprintToggle);
             });
@@ -925,7 +1162,6 @@
             charData.activeAction.reset().fadeIn(duration).play();
         }
 
-        // UPDATED: Dynamically toggle UI controls depending on whether inside or outside of car
         function checkCarProximity() {
             if (!carData.mesh || characters.length === 0 || isSwitching) return;
             
@@ -934,25 +1170,24 @@
             const btnJump = document.getElementById('btn-jump');
             const btnSwitch = document.getElementById('btn-switch-char');
             const btnSprint = document.getElementById('btn-sprint');
+            const btnEmoteMobile = document.getElementById('btn-emote-mobile');
 
             if (carData.active) {
-                // INSIDE CAR
                 btnF.innerHTML = "F";
                 btnF.style.display = 'flex';
                 btnHorn.style.display = 'flex'; 
                 
-                // Hide character movement controls
                 btnJump.style.display = 'none';
                 btnSwitch.style.display = 'none';
                 btnSprint.style.display = 'none';
+                btnEmoteMobile.style.display = 'none';
             } else {
-                // OUTSIDE CAR
                 const dist = characters[activeCharIndex].mesh.position.distanceTo(carData.mesh.position);
                 
-                // Show character movement controls
                 btnJump.style.display = 'flex';
                 btnSwitch.style.display = 'flex';
                 btnSprint.style.display = 'flex';
+                btnEmoteMobile.style.display = window.innerWidth <= 900 ? 'flex' : 'none';
                 btnHorn.style.display = 'none'; 
 
                 if (dist < CAR_CONFIG.interactionDist) {
@@ -1044,6 +1279,7 @@
         function updatePhysics(dt) {
             if (characters.length === 0) return;
 
+            // --- CAR PHYSICS ---
             if (carData.active && carData.mesh) {
                 let throttle = 0;
                 let steerInput = 0;
@@ -1088,17 +1324,17 @@
                     carData.mesh.rotation.y += steerAmount;
                 }
 
-                const moveDir = new THREE.Vector3(0, 0, 1).applyQuaternion(carData.mesh.quaternion);
-                const collisionDir = moveDir.clone();
-                if (carData.speed < 0) collisionDir.negate(); 
+                _vDir.set(0, 0, 1).applyQuaternion(carData.mesh.quaternion);
+                _vTemp1.copy(_vDir);
+                if (carData.speed < 0) _vTemp1.negate(); 
 
                 let carBlocked = false;
                 if (Math.abs(carData.speed) > 0.01) {
-                    const carRayOrigin = carData.mesh.position.clone();
-                    carRayOrigin.y += 1.0; 
+                    _vTarget.copy(carData.mesh.position);
+                    _vTarget.y += 1.0; 
                     
-                    carRay.set(carRayOrigin, collisionDir);
-                    const hits = carRay.intersectObjects(collidableMeshList, true);
+                    carRay.set(_vTarget, _vTemp1);
+                    const hits = carRay.intersectObjects(collidableMeshList, false); 
                     
                     const validHit = hits.find(hit => {
                         let current = hit.object;
@@ -1115,18 +1351,21 @@
                 }
 
                 if (!carBlocked) {
-                    carData.mesh.position.addScaledVector(moveDir, carData.speed * dt);
+                    carData.mesh.position.addScaledVector(_vDir, carData.speed * dt);
                 } else {
                     carData.speed = 0; 
                 }
 
-                downRay.set(new THREE.Vector3(carData.mesh.position.x, carData.mesh.position.y + 2, carData.mesh.position.z), new THREE.Vector3(0, -1, 0));
-                const hits = downRay.intersectObjects(terrainMeshList, true);
+                _vTemp2.copy(carData.mesh.position);
+                _vTemp2.y += 2.0;
+                downRay.set(_vTemp2, _vDown);
+                const hits = downRay.intersectObjects(terrainMeshList, false);
                 if (hits.length > 0) {
                     carData.mesh.position.y = hits[0].point.y;
                 }
             }
             
+            // --- CHARACTER PHYSICS ---
             for(let i = 0; i < characters.length; i++) {
                 let charData = characters[i];
                 let charMesh = charData.mesh;
@@ -1136,9 +1375,9 @@
                     const isDriver = (i === activeCharIndex);
                     
                     const localOffset = isDriver ? SEAT_POSITIONS.driver : SEAT_POSITIONS.passenger; 
-                    const worldOffset = localOffset.clone().applyQuaternion(carData.mesh.quaternion);
+                    _vTemp1.copy(localOffset).applyQuaternion(carData.mesh.quaternion);
                     
-                    charMesh.position.copy(carData.mesh.position).add(worldOffset);
+                    charMesh.position.copy(carData.mesh.position).add(_vTemp1);
                     charMesh.quaternion.copy(carData.mesh.quaternion); 
                     
                     charData.velocity.set(0,0,0);
@@ -1149,27 +1388,27 @@
                     } else {
                         fadeToAction(charData, 'passenger', 0.2);
                     }
-
                     continue; 
                 }
 
                 let isRunning = false;
-                const forward = new THREE.Vector3(-Math.sin(camState.angleX), 0, -Math.cos(camState.angleX));
-                const right = new THREE.Vector3(Math.cos(camState.angleX), 0, -Math.sin(camState.angleX));
-                let moveDir = new THREE.Vector3(0,0,0);
+                
+                _vForward.set(-Math.sin(camState.angleX), 0, -Math.cos(camState.angleX));
+                _vRight.set(Math.cos(camState.angleX), 0, -Math.sin(camState.angleX));
+                _vDir.set(0,0,0);
 
-                if (isActive && !isSwitching && !carData.active) {
+                if (isActive && !isSwitching && !carData.active && !isEmoting) {
                     isRunning = keys.shift || mobileSprintToggle;
-                    if (keys.w) moveDir.add(forward); 
-                    if (keys.s) moveDir.sub(forward);
-                    if (keys.d) moveDir.add(right); 
-                    if (keys.a) moveDir.sub(right);
+                    if (keys.w) _vDir.add(_vForward); 
+                    if (keys.s) _vDir.sub(_vForward);
+                    if (keys.d) _vDir.add(_vRight); 
+                    if (keys.a) _vDir.sub(_vRight);
 
                     if (joystick.active) {
-                        moveDir.addScaledVector(forward, -joystick.y);
-                        moveDir.addScaledVector(right, joystick.x);
+                        _vDir.addScaledVector(_vForward, -joystick.y);
+                        _vDir.addScaledVector(_vRight, joystick.x);
                     }
-                } else if (!isActive) {
+                } else if (!isActive && !isEmoting) {
                     let targetMesh = carData.active ? carData.mesh : characters[activeCharIndex].mesh;
                     let dist = charMesh.position.distanceTo(targetMesh.position);
 
@@ -1187,18 +1426,18 @@
                     }
 
                     if (charData.isFollowing) {
-                        let dirToTarget = new THREE.Vector3().subVectors(targetMesh.position, charMesh.position);
-                        dirToTarget.y = 0; 
-                        dirToTarget.normalize();
-                        moveDir.copy(dirToTarget);
+                        _vTarget.subVectors(targetMesh.position, charMesh.position);
+                        _vTarget.y = 0; 
+                        _vTarget.normalize();
+                        _vDir.copy(_vTarget);
                         isRunning = dist > 6.0; 
                     }
                 }
 
                 const speed = isRunning ? CONFIG.runSpeed : CONFIG.walkSpeed;
-                const isMoving = moveDir.lengthSq() > 0.01;
+                const isMoving = _vDir.lengthSq() > 0.01;
 
-                if (isActive && !isSwitching) {
+                if (isActive && !isSwitching && !isEmoting) {
                     if (charData.onGround && !charData.isJumping) {
                         if (isMoving) {
                             if (isRunning) {
@@ -1220,49 +1459,49 @@
 
                 let isBlocked = false;
                 if (isMoving) {
-                    const length = moveDir.length();
-                    const normalizedDir = moveDir.clone().normalize();
+                    const length = _vDir.length();
+                    _vDir.normalize();
                     
-                    const rayOrigin = charMesh.position.clone(); rayOrigin.y += 1.0;
-                    forwardRay.set(rayOrigin, normalizedDir);
-                    const hits = forwardRay.intersectObjects(collidableMeshList, true);
+                    _vTemp1.copy(charMesh.position); _vTemp1.y += 1.0;
+                    forwardRay.set(_vTemp1, _vDir);
+                    const hits = forwardRay.intersectObjects(collidableMeshList, false);
                     if (hits.length > 0 && hits[0].distance < 0.5) isBlocked = true;
                     
                     if (!isBlocked) {
                         const appliedLength = (isActive && !isSwitching) ? Math.min(length, 1.0) : 1.0;
-                        charMesh.position.addScaledVector(normalizedDir, speed * appliedLength * dt);
+                        charMesh.position.addScaledVector(_vDir, speed * appliedLength * dt);
                         
-                        const targetRot = Math.atan2(normalizedDir.x, normalizedDir.z);
+                        const targetRot = Math.atan2(_vDir.x, _vDir.z);
                         let rotDiff = targetRot - charMesh.rotation.y;
                         while (rotDiff > Math.PI) rotDiff -= Math.PI * 2;
                         while (rotDiff < -Math.PI) rotDiff += Math.PI * 2;
                         charMesh.rotation.y += rotDiff * CONFIG.rotSpeed * dt;
                         
-                        if (!charData.isJumping && charData.onGround) fadeToAction(charData, isRunning ? 'run' : 'walk', 0.2);
+                        if (!isEmoting && !charData.isJumping && charData.onGround) fadeToAction(charData, isRunning ? 'run' : 'walk', 0.2);
                     } else {
-                        if (!charData.isJumping && charData.onGround) fadeToAction(charData, 'idle', 0.2);
+                        if (!isEmoting && !charData.isJumping && charData.onGround) fadeToAction(charData, 'idle', 0.2);
                     }
                 } else {
-                    if (!charData.isJumping && charData.onGround) fadeToAction(charData, 'idle', 0.2);
+                    if (!isEmoting && !charData.isJumping && charData.onGround) fadeToAction(charData, 'idle', 0.2);
                 }
 
-                if (isActive && !isSwitching && keys.space && charData.onGround && !charData.isJumping && !carData.active) {
+                if (isActive && !isSwitching && keys.space && charData.onGround && !charData.isJumping && !carData.active && !isEmoting) {
                     charData.velocity.y = CONFIG.jumpForce; charData.onGround = false; charData.isJumping = true;
                     if (sounds.jump) { if (sounds.jump.isPlaying) sounds.jump.stop(); sounds.jump.play(); }
                     fadeToAction(charData, 'jump', 0.1);
                 }
 
-                if (!charData.onGround && charData.velocity.y < -3.0 && !charData.isJumping) {
+                if (!isEmoting && !charData.onGround && charData.velocity.y < -3.0 && !charData.isJumping) {
                     fadeToAction(charData, 'fall', 0.2);
                 }
 
                 charData.velocity.y += CONFIG.gravity * dt;
                 charMesh.position.y += charData.velocity.y * dt;
 
-                const downOrigin = charMesh.position.clone(); downOrigin.y += 2.0;
-                downRay.set(downOrigin, new THREE.Vector3(0, -1, 0));
+                _vTemp2.copy(charMesh.position); _vTemp2.y += 2.0;
+                downRay.set(_vTemp2, _vDown);
                 
-                const intersects = downRay.intersectObjects(collidableMeshList, true);
+                const intersects = downRay.intersectObjects(collidableMeshList, false);
                 if (intersects.length > 0) {
                     const hit = intersects[0];
                     const groundHeight = hit.point.y;
@@ -1301,8 +1540,8 @@
             const offsetZ = Math.cos(camState.angleX) * camState.curDist * Math.cos(camState.angleY);
             const offsetY = camState.curDist * Math.sin(camState.angleY);
             
-            const targetPos = new THREE.Vector3(activeMesh.position.x + offsetX, activeMesh.position.y + camState.curHeight + offsetY, activeMesh.position.z + offsetZ);
-            camera.position.copy(targetPos);
+            _vTarget.set(activeMesh.position.x + offsetX, activeMesh.position.y + camState.curHeight + offsetY, activeMesh.position.z + offsetZ);
+            camera.position.copy(_vTarget);
             
             const lookAtHeight = (currentCamIndex === 1) ? 1.7 : 1.5;
             camera.lookAt(activeMesh.position.x, activeMesh.position.y + lookAtHeight, activeMesh.position.z);
@@ -1320,21 +1559,35 @@
             const offsetZ = Math.cos(camState.angleX) * camState.curDist * Math.cos(camState.angleY);
             const offsetY = camState.curDist * Math.sin(camState.angleY);
 
-            const targetPos = new THREE.Vector3(
-                carData.mesh.position.x + offsetX,
-                carData.mesh.position.y + camState.curHeight + offsetY,
-                carData.mesh.position.z + offsetZ
-            );
+            _vTarget.set(carData.mesh.position.x + offsetX, carData.mesh.position.y + camState.curHeight + offsetY, carData.mesh.position.z + offsetZ);
             
-            camera.position.lerp(targetPos, 0.2); 
+            camera.position.lerp(_vTarget, 0.2); 
             
-            const lookTarget = new THREE.Vector3(
-                carData.mesh.position.x,
-                carData.mesh.position.y + 1.2, 
-                carData.mesh.position.z
-            );
+            _vTemp1.set(carData.mesh.position.x, carData.mesh.position.y + 1.2, carData.mesh.position.z);
+            camera.lookAt(_vTemp1);
+        }
+
+        function updateCinematicCamera(dt) {
+            if (characters.length < 2) return;
+            const p1 = characters[0].mesh.position;
+            const p2 = characters[1].mesh.position;
             
-            camera.lookAt(lookTarget);
+            const midPoint = new THREE.Vector3().addVectors(p1, p2).multiplyScalar(0.5);
+            const baseRot = characters[activeCharIndex].mesh.rotation.y;
+            
+            cinematicAngle += dt * 0.15; 
+            const orbitOffset = Math.sin(cinematicAngle) * 0.4; 
+            
+            const forward = new THREE.Vector3(0, 0, 1).applyAxisAngle(new THREE.Vector3(0,1,0), baseRot + orbitOffset);
+            
+            _vTarget.copy(midPoint).addScaledVector(forward, 4.5); 
+            _vTarget.y += 1.5; 
+            
+            camera.position.lerp(_vTarget, 0.05); 
+            
+            _vTemp1.copy(midPoint);
+            _vTemp1.y += 1.0;
+            camera.lookAt(_vTemp1);
         }
 
         function handleCinematicSwitchCamera(realDt) {
@@ -1343,12 +1596,12 @@
             
             let easeT = t * t * (3 - 2 * t);
 
-            const temp1 = new THREE.Vector3().copy(switchStartCamPos).lerp(switchControlPoint, easeT);
-            const temp2 = new THREE.Vector3().copy(switchControlPoint).lerp(switchTargetCamPos, easeT);
-            camera.position.copy(temp1).lerp(temp2, easeT);
+            _vTemp1.copy(switchStartCamPos).lerp(switchControlPoint, easeT);
+            _vTemp2.copy(switchControlPoint).lerp(switchTargetCamPos, easeT);
+            camera.position.copy(_vTemp1).lerp(_vTemp2, easeT);
 
-            const currentLookAt = new THREE.Vector3().copy(switchStartLookAt).lerp(switchTargetLookAt, easeT);
-            camera.lookAt(currentLookAt);
+            _vTarget.copy(switchStartLookAt).lerp(switchTargetLookAt, easeT);
+            camera.lookAt(_vTarget);
 
             camera.fov = 60 + Math.sin(easeT * Math.PI) * 35;
             camera.updateProjectionMatrix();
@@ -1378,18 +1631,25 @@
                 handleCinematicSwitchCamera(realDt);
             } else if (carData.active) {
                 updateCarCamera(); 
+            } else if (isCinematicMode && isEmoting) {
+                updateCinematicCamera(realDt);
             } else {
                 updateGameCamera(); 
             }
 
-            if (characters.length > 0) {
-                const pos = characters[activeCharIndex].mesh.position;
-                if(document.getElementById('pos-display')) {
-                    document.getElementById('pos-display').textContent = `${pos.x.toFixed(2)}, ${pos.y.toFixed(2)}, ${pos.z.toFixed(2)}`;
+            // PERFORMANCE: Throttle DOM position text writes to stop GC spikes
+            const now = performance.now();
+            if (now - _lastDOMUpdate > 150) {
+                if (characters.length > 0) {
+                    const pos = characters[activeCharIndex].mesh.position;
+                    if(document.getElementById('pos-display')) {
+                        document.getElementById('pos-display').textContent = `${pos.x.toFixed(2)}, ${pos.y.toFixed(2)}, ${pos.z.toFixed(2)}`;
+                    }
                 }
+                _lastDOMUpdate = now;
             }
 
-            updateFps();
+            updateFps(now);
 
             if (axisGroup) {
                 axisGroup.visible = showGlobalAxis;
@@ -1399,9 +1659,8 @@
             else renderer.render(scene, camera);
         }
 
-        function updateFps() {
+        function updateFps(now) {
             _frameCount++;
-            const now = performance.now();
             const elapsed = (now - _lastFpsTime) / 1000;
             if (elapsed >= 0.5) {
                 if (fpsCounterEl) fpsCounterEl.textContent = Math.round((_frameCount / elapsed));
