@@ -2,120 +2,308 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
-    <title>High Fidelity Game - Mobile Optimized</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"/>
+    <title>High Fidelity Game - Mobile & Laptop Optimized</title>
     <style>
-        body { margin: 0; overflow: hidden; background-color: #000; font-family: 'Segoe UI', sans-serif; user-select: none; touch-action: none; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        html, body {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            overflow: hidden; background-color: #000;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            user-select: none; -webkit-user-select: none;
+            touch-action: none; overscroll-behavior: none;
+        }
+        canvas { display: block; width: 100%; height: 100%; outline: none; }
         
-        #ui-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10; transition: opacity 0.3s; }
-        #crosshair { display: none; position: absolute; top: 50%; left: 50%; width: 20px; height: 20px; transform: translate(-50%, -50%); pointer-events: none; z-index: 100; }
-        #crosshair::before, #crosshair::after { content: ''; position: absolute; background: rgba(0, 210, 255, 0.9); box-shadow: 0 0 4px #00d2ff; }
+        #ui-layer {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; z-index: 10;
+            transition: opacity 0.3s ease;
+        }
+        #crosshair {
+            display: none; position: absolute; top: 50%; left: 50%;
+            width: 20px; height: 20px; transform: translate(-50%, -50%);
+            pointer-events: none; z-index: 100;
+        }
+        #crosshair::before, #crosshair::after {
+            content: ''; position: absolute;
+            background: rgba(0, 210, 255, 0.9); box-shadow: 0 0 4px #00d2ff;
+        }
         #crosshair::before { top: 9px; left: 0; width: 20px; height: 2px; } 
         #crosshair::after { top: 0; left: 9px; width: 2px; height: 20px; } 
         
-        /* Advanced Cinematic Loading Screen */
         #loading { 
             position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
             background: radial-gradient(circle at center, #0f172a 0%, #000000 100%);
-            color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; 
-            z-index: 9999; backdrop-filter: blur(20px); transition: opacity 0.6s ease-in-out;
-            pointer-events: auto;
+            color: #fff; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; 
+            z-index: 9999; backdrop-filter: blur(20px);
+            transition: opacity 0.6s ease-in-out; pointer-events: auto;
+            padding: 20px; text-align: center;
         }
-        #loading-text { font-size: 28px; font-weight: 800; margin-bottom: 25px; letter-spacing: 4px; color: #fff; text-shadow: 0 0 15px rgba(0, 212, 255, 0.8); }
-        #loading-bar-bg { width: 400px; max-width: 80%; height: 4px; background: rgba(255,255,255,0.05); border-radius: 2px; overflow: hidden; margin-bottom: 40px; box-shadow: inset 0 1px 2px rgba(0,0,0,0.8); }
-        #loading-bar-fill { width: 0%; height: 100%; background: #00d2ff; transition: width 0.15s ease-out; box-shadow: 0 0 15px #00d2ff, 0 0 5px #fff; }
+        #loading-text {
+            font-size: clamp(20px, 4vw, 28px); font-weight: 800;
+            margin-bottom: 25px; letter-spacing: 4px; color: #fff;
+            text-shadow: 0 0 15px rgba(0, 212, 255, 0.8);
+        }
+        #loading-bar-bg {
+            width: 400px; max-width: 80%; height: 4px;
+            background: rgba(255,255,255,0.08); border-radius: 2px;
+            overflow: hidden; margin-bottom: 40px;
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.8);
+        }
+        #loading-bar-fill {
+            width: 0%; height: 100%; background: #00d2ff;
+            transition: width 0.15s ease-out;
+            box-shadow: 0 0 15px #00d2ff, 0 0 5px #fff;
+        }
         #start-btn { 
-            display: none; padding: 18px 50px; background: rgba(0, 212, 255, 0.1); color: #fff; 
-            border: 1px solid rgba(0, 212, 255, 0.5); border-radius: 4px; font-weight: bold; font-size: 16px; 
-            cursor: pointer; letter-spacing: 3px; transition: all 0.3s; text-transform: uppercase;
-            box-shadow: 0 4px 15px rgba(0, 212, 255, 0.2);
+            display: none; padding: 18px 50px;
+            background: rgba(0, 212, 255, 0.12); color: #fff; 
+            border: 1px solid rgba(0, 212, 255, 0.55); border-radius: 6px;
+            font-weight: bold; font-size: 16px; cursor: pointer;
+            letter-spacing: 3px; transition: all 0.25s ease;
+            text-transform: uppercase; box-shadow: 0 4px 15px rgba(0, 212, 255, 0.2);
         }
-        #start-btn:hover { background: rgba(0, 212, 255, 0.3); border-color: #00d2ff; box-shadow: 0 0 25px rgba(0, 212, 255, 0.4); transform: translateY(-2px); }
+        #start-btn:hover, #start-btn:active {
+            background: rgba(0, 212, 255, 0.3); border-color: #00d2ff;
+            box-shadow: 0 0 25px rgba(0, 212, 255, 0.45); transform: translateY(-2px);
+        }
         
-        #hud { position: absolute; bottom: 30px; left: 30px; color: rgba(255,255,255,0.9); font-size: 14px; background: rgba(0,0,0,0.5); padding: 15px 25px; border-radius: 8px; border-left: 4px solid #00d2ff; display: block; }
+        #hud {
+            position: absolute;
+            bottom: max(24px, env(safe-area-inset-bottom, 24px));
+            left: max(24px, env(safe-area-inset-left, 24px));
+            color: rgba(255,255,255,0.92); font-size: 13px; line-height: 1.5;
+            background: rgba(6, 10, 15, 0.65); padding: 12px 20px;
+            border-radius: 8px; border-left: 4px solid #00d2ff;
+            backdrop-filter: blur(6px); box-shadow: 0 6px 20px rgba(0,0,0,0.45);
+            display: block; max-width: calc(100vw - 48px);
+        }
         
-        #axis-fps-global { position: fixed; top: 10px; left: 10px; z-index: 9000; pointer-events: auto; width: 230px; background: rgba(6,10,15,0.7); border: 1px solid rgba(50, 50, 50, 0.8); padding: 8px; border-radius: 8px; color: #ddd; font-family: monospace; font-size: 12px; backdrop-filter: blur(6px); box-shadow: 0 6px 18px rgba(0,0,0,0.6); transition: opacity 0.3s; }
-        #axis-fps-global label { margin-right: 8px; display: inline-flex; align-items: center; gap:6px; cursor: pointer; }
-        #fps-counter { color: #00d2ff; font-weight:700; margin-left:6px; }
-        #axis-fps-global .small { font-size:11px; color:#bbb; margin-top:6px; display:block; }
+        #axis-fps-global {
+            position: fixed;
+            top: max(10px, env(safe-area-inset-top, 10px));
+            left: max(10px, env(safe-area-inset-left, 10px));
+            z-index: 9000; pointer-events: auto; width: 256px;
+            background: rgba(6,10,15,0.78); border: 1px solid rgba(70, 85, 105, 0.65);
+            padding: 10px 12px; border-radius: 10px; color: #ddd;
+            font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+            font-size: 12px; backdrop-filter: blur(8px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.65);
+            transition: opacity 0.3s, transform 0.3s;
+        }
+        #axis-fps-global label {
+            margin-right: 8px; display: inline-flex;
+            align-items: center; gap: 5px; cursor: pointer;
+        }
+        #fps-counter { color: #00d2ff; font-weight: 700; margin-left: 4px; }
+        #res-scale-display { color: #5eead4; font-weight: 600; margin-left: 6px; font-size: 10px; }
+        #axis-fps-global .small { font-size: 11px; color: #bbb; margin-top: 5px; display: block; }
         
-        .toggle-btn { background: #333; color: white; border: 1px solid #555; padding: 5px 10px; cursor: pointer; border-radius: 4px; margin-right: 5px; }
-        .toggle-btn:hover { background: #555; }
+        .toggle-btn {
+            background: rgba(40, 48, 60, 0.85); color: #eee;
+            border: 1px solid rgba(100, 116, 139, 0.6);
+            padding: 5px 8px; cursor: pointer; border-radius: 5px;
+            font-size: 11px; font-weight: 600; transition: all 0.15s ease;
+        }
+        .toggle-btn:hover { background: rgba(65, 78, 98, 0.95); border-color: #00d2ff; }
+        .toggle-btn.active-preset {
+            background: rgba(0, 212, 255, 0.28);
+            border-color: #00d2ff; color: #fff;
+            box-shadow: 0 0 8px rgba(0, 212, 255, 0.35);
+        }
 
-        /* --- EMOTE WHEEL UI --- */
         #emote-wheel {
-            display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            width: 260px; height: 260px; border-radius: 50%; background: rgba(0,0,0,0.5);
-            backdrop-filter: blur(8px); z-index: 200; pointer-events: auto; box-shadow: 0 0 20px rgba(0, 212, 255, 0.2);
+            display: none; position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: min(260px, 75vw); height: min(260px, 75vw);
+            border-radius: 50%; background: rgba(6, 10, 15, 0.68);
+            border: 1px solid rgba(0, 212, 255, 0.35);
+            backdrop-filter: blur(10px); z-index: 200; pointer-events: auto;
+            box-shadow: 0 0 28px rgba(0, 212, 255, 0.25);
         }
         .emote-btn-item {
             position: absolute; width: 50px; height: 50px;
             top: 50%; left: 50%; margin-top: -25px; margin-left: -25px;
-            border-radius: 50%; background: rgba(0, 212, 255, 0.2); border: 2px solid #00d2ff;
-            color: #fff; display: flex; align-items: center; justify-content: center;
-            font-weight: bold; cursor: pointer; transition: all 0.2s; text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+            border-radius: 50%; background: rgba(0, 212, 255, 0.2);
+            border: 2px solid #00d2ff; color: #fff;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: bold; cursor: pointer; transition: all 0.2s;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.8);
         }
-        .emote-btn-item:hover { background: rgba(0, 212, 255, 0.7); transform: scale(1.15); box-shadow: 0 0 10px #00d2ff; }
+        .emote-btn-item:hover, .emote-btn-item:active {
+            background: rgba(0, 212, 255, 0.75);
+            box-shadow: 0 0 12px #00d2ff;
+        }
         #emote-close-btn {
             position: absolute; top: 50%; left: 50%; width: 44px; height: 44px;
             margin-top: -22px; margin-left: -22px; border-radius: 50%;
-            background: rgba(255, 50, 50, 0.4); border: 2px solid #ff4444;
+            background: rgba(255, 50, 50, 0.45); border: 2px solid #ff4444;
             color: white; display: flex; align-items: center; justify-content: center;
             font-weight: bold; cursor: pointer; transition: all 0.2s;
         }
-        #emote-close-btn:hover { background: rgba(255, 50, 50, 0.8); box-shadow: 0 0 10px #ff4444; }
+        #emote-close-btn:hover, #emote-close-btn:active {
+            background: rgba(255, 50, 50, 0.85); box-shadow: 0 0 10px #ff4444;
+        }
 
         /* --- CLEAN RECORDING MODE (M KEY) --- */
-        .clean-mode #ui-layer, .clean-mode #mobile-controls, .clean-mode #axis-fps-global {
+        .clean-mode #ui-layer,
+        .clean-mode #mobile-controls,
+        .clean-mode #axis-fps-global,
+        .clean-mode #mobile-gfx-modal {
             display: none !important; opacity: 0 !important; pointer-events: none !important;
         }
 
         /* Hide the blue interact box completely across all platforms */
         #interact-hint { display: none !important; }
 
-        /* --- MOBILE CONTROLS UI --- */
-        #mobile-controls { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 15; transition: opacity 0.3s; }
-        .touch-btn { position: absolute; pointer-events: auto; background: rgba(0, 0, 0, 0.4); border: 2px solid rgba(255, 255, 255, 0.3); border-radius: 50%; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; backdrop-filter: blur(4px); text-shadow: 0 1px 3px rgba(0,0,0,0.8); }
-        .touch-btn:active, .touch-btn.active-toggle { background: rgba(0, 212, 255, 0.6); border-color: #00d2ff; }
+        #mobile-controls {
+            display: none; position: absolute; top: 0; left: 0;
+            width: 100%; height: 100%; pointer-events: none;
+            z-index: 15; transition: opacity 0.3s;
+        }
+        .touch-btn {
+            position: absolute; pointer-events: auto;
+            background: rgba(8, 12, 18, 0.48);
+            border: 2px solid rgba(255, 255, 255, 0.32);
+            border-radius: 50%; color: white;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 700; backdrop-filter: blur(5px);
+            text-shadow: 0 1px 3px rgba(0,0,0,0.85);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.35);
+            transition: transform 0.1s ease, background 0.15s ease, border-color 0.15s ease;
+        }
+        .touch-btn:active, .touch-btn.active-toggle {
+            background: rgba(0, 212, 255, 0.62);
+            border-color: #00d2ff;
+            transform: scale(0.95);
+        }
         
-        #joy-zone { position: absolute; bottom: 30px; left: 30px; width: 130px; height: 130px; border-radius: 50%; background: rgba(255,255,255,0.05); border: 2px solid rgba(255,255,255,0.15); pointer-events: auto; }
-        #joy-knob { position: absolute; top: 50%; left: 50%; width: 50px; height: 50px; border-radius: 50%; background: rgba(0, 212, 255, 0.5); transform: translate(-50%, -50%); pointer-events: none; box-shadow: 0 0 10px rgba(0,212,255,0.5); }
+        #joy-zone {
+            position: absolute;
+            bottom: max(26px, calc(env(safe-area-inset-bottom, 0px) + 20px));
+            left: max(26px, calc(env(safe-area-inset-left, 0px) + 20px));
+            width: clamp(110px, 28vmin, 136px);
+            height: clamp(110px, 28vmin, 136px);
+            border-radius: 50%;
+            background: rgba(255,255,255,0.06);
+            border: 2px solid rgba(255,255,255,0.18);
+            pointer-events: auto;
+            box-shadow: inset 0 0 18px rgba(0,0,0,0.35);
+        }
+        #joy-knob {
+            position: absolute; top: 50%; left: 50%;
+            width: 48px; height: 48px; border-radius: 50%;
+            background: rgba(0, 212, 255, 0.58);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            transform: translate(-50%, -50%); pointer-events: none;
+            box-shadow: 0 0 12px rgba(0,212,255,0.55);
+        }
         
-        #touch-look-zone { position: absolute; top: 0; right: 0; width: 50%; height: 100%; pointer-events: auto; }
+        #touch-look-zone {
+            position: absolute; top: 0; right: 0;
+            width: 55%; height: 100%; pointer-events: auto;
+        }
         
-        #btn-jump { bottom: 40px; right: 40px; width: 70px; height: 70px; font-size: 14px; }
-        #btn-switch-char { bottom: 40px; right: 130px; width: 60px; height: 60px; font-size: 10px; text-align: center; line-height: 1.1; }
-        #btn-sprint { bottom: 130px; right: 80px; width: 55px; height: 55px; font-size: 12px; }
-        #btn-emote-mobile { bottom: 130px; right: 20px; width: 55px; height: 55px; font-size: 11px; display: none; }
-        #btn-cam-swap { top: 20px; right: 20px; width: 50px; height: 50px; font-size: 12px; }
+        #btn-jump {
+            bottom: max(32px, calc(env(safe-area-inset-bottom, 0px) + 24px));
+            right: max(30px, calc(env(safe-area-inset-right, 0px) + 24px));
+            width: 68px; height: 68px; font-size: 13px;
+        }
+        #btn-switch-char {
+            bottom: max(32px, calc(env(safe-area-inset-bottom, 0px) + 24px));
+            right: max(116px, calc(env(safe-area-inset-right, 0px) + 110px));
+            width: 58px; height: 58px; font-size: 10px;
+            text-align: center; line-height: 1.1;
+        }
+        #btn-sprint {
+            bottom: max(116px, calc(env(safe-area-inset-bottom, 0px) + 108px));
+            right: max(76px, calc(env(safe-area-inset-right, 0px) + 70px));
+            width: 54px; height: 54px; font-size: 11px;
+        }
+        #btn-emote-mobile {
+            bottom: max(116px, calc(env(safe-area-inset-bottom, 0px) + 108px));
+            right: max(16px, calc(env(safe-area-inset-right, 0px) + 14px));
+            width: 52px; height: 52px; font-size: 10px; display: none;
+        }
+        #btn-cam-swap {
+            top: max(16px, calc(env(safe-area-inset-top, 0px) + 12px));
+            right: max(16px, calc(env(safe-area-inset-right, 0px) + 14px));
+            width: 48px; height: 48px; font-size: 11px;
+        }
+        #btn-gfx-mobile {
+            top: max(16px, calc(env(safe-area-inset-top, 0px) + 12px));
+            right: max(74px, calc(env(safe-area-inset-right, 0px) + 72px));
+            width: 48px; height: 48px; font-size: 10px;
+        }
+        #btn-cine-mobile {
+            top: max(16px, calc(env(safe-area-inset-top, 0px) + 12px));
+            right: max(132px, calc(env(safe-area-inset-right, 0px) + 130px));
+            width: 48px; height: 48px; font-size: 10px; display: none;
+        }
         
         /* Minimal Modern 'F' Button (Only shows near car) */
         #btn-interact { 
-            display: none; bottom: 130px; right: 160px; width: 50px; height: 50px; 
-            font-size: 20px; font-family: 'Segoe UI', sans-serif;
-            background: rgba(10, 10, 10, 0.6); border: 1px solid rgba(255, 255, 255, 0.4); 
+            display: none;
+            bottom: max(116px, calc(env(safe-area-inset-bottom, 0px) + 108px));
+            right: max(145px, calc(env(safe-area-inset-right, 0px) + 140px));
+            width: 52px; height: 52px; 
+            font-size: 19px; font-family: 'Segoe UI', sans-serif;
+            background: rgba(10, 14, 20, 0.68);
+            border: 1.5px solid rgba(0, 212, 255, 0.65); 
             color: white; text-align: center; line-height: 1; z-index: 20; 
             border-radius: 50%; backdrop-filter: blur(5px);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.4); text-shadow: none;
+            box-shadow: 0 4px 14px rgba(0,212,255,0.3); text-shadow: none;
         }
         #btn-interact:active { background: rgba(255, 255, 255, 0.9); color: #000; border-color: #fff; }
 
         /* Mobile Horn Button */
         #btn-horn { 
-            display: none; bottom: 200px; right: 160px; width: 50px; height: 50px; 
-            font-size: 11px; font-family: 'Segoe UI', sans-serif;
-            background: rgba(10, 10, 10, 0.6); border: 1px solid rgba(255, 255, 255, 0.4); 
+            display: none;
+            bottom: max(180px, calc(env(safe-area-inset-bottom, 0px) + 172px));
+            right: max(145px, calc(env(safe-area-inset-right, 0px) + 140px));
+            width: 50px; height: 50px; 
+            font-size: 10px; font-family: 'Segoe UI', sans-serif;
+            background: rgba(10, 10, 10, 0.65);
+            border: 1px solid rgba(255, 255, 255, 0.4); 
             color: white; text-align: center; line-height: 1; z-index: 20; 
             border-radius: 50%; backdrop-filter: blur(5px);
         }
-        #btn-horn:active, #btn-horn.active-toggle { background: rgba(255, 50, 50, 0.8); border-color: #ffaaaa; }
+        #btn-horn:active, #btn-horn.active-toggle {
+            background: rgba(255, 50, 50, 0.8); border-color: #ffaaaa;
+        }
 
-        /* CLEAN MOBILE VIEW: Keep Desktop same, hide UI elements on Mobile */
+        #mobile-gfx-modal {
+            display: none; position: fixed;
+            top: max(74px, calc(env(safe-area-inset-top, 0px) + 70px));
+            right: max(16px, calc(env(safe-area-inset-right, 0px) + 14px));
+            z-index: 9500; pointer-events: auto;
+            background: rgba(6, 10, 15, 0.9);
+            border: 1px solid rgba(0, 212, 255, 0.45);
+            border-radius: 12px; padding: 12px; width: 225px;
+            color: #eee; font-size: 12px; backdrop-filter: blur(10px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.75);
+        }
+        .touch-active #mobile-controls { display: block; }
+        .touch-active #btn-emote-mobile { display: flex; }
+
         @media (max-width: 900px) {
             #mobile-controls { display: block; }
             #hud { display: none !important; }
             #axis-fps-global { display: none !important; }
             #btn-emote-mobile { display: flex; }
+        }
+
+        @media (max-width: 600px) and (orientation: portrait) {
+            #joy-zone { width: 112px; height: 112px; bottom: 22px; left: 18px; }
+            #btn-jump { width: 62px; height: 62px; bottom: 24px; right: 18px; }
+            #btn-switch-char { width: 52px; height: 52px; bottom: 24px; right: 92px; }
+            #btn-sprint { width: 48px; height: 48px; bottom: 98px; right: 60px; }
+            #btn-emote-mobile { width: 48px; height: 48px; bottom: 98px; right: 12px; }
+            #btn-interact { bottom: 98px; right: 120px; width: 48px; height: 48px; }
+            #btn-horn { bottom: 156px; right: 120px; width: 46px; height: 46px; }
         }
     </style>
     
@@ -153,7 +341,7 @@
 
         <div id="interact-hint"></div>
         <div id="hud">
-            <b>WASD</b> Move/Drive | <b>SHIFT</b> Sprint | <b>SPACE</b> Jump | <b>C</b> Switch Char | <b>V</b> Camera | <b>F</b> Car | <b>E</b> Emote/Horn | <b>L</b> Cinematic Cam | <b>M</b> Hide UI
+            <b>WASD</b> Move/Drive | <b>SHIFT</b> Sprint | <b>SPACE</b> Jump/Brake | <b>C</b> Switch Char | <b>V</b> Camera | <b>F</b> Car | <b>E</b> Emote/Horn | <b>L</b> Cinematic Cam | <b>M</b> Hide UI | <b>1/2/3</b> Graphics
         </div>
     </div>
 
@@ -166,29 +354,60 @@
         <div id="btn-sprint" class="touch-btn">SPRINT</div>
         <div id="btn-emote-mobile" class="touch-btn">EMOTE</div>
         <div id="btn-cam-swap" class="touch-btn">CAM</div>
+        <div id="btn-gfx-mobile" class="touch-btn">GFX</div>
+        <div id="btn-cine-mobile" class="touch-btn">CINE</div>
         <div id="btn-interact" class="touch-btn">F</div>
         <div id="btn-horn" class="touch-btn">HORN</div>
     </div>
 
-    <!-- PC Coordinate Shower / Debug UI -->
+    <!-- Mobile Graphics & Optimization Popup -->
+    <div id="mobile-gfx-modal">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <strong style="color:#00d2ff; letter-spacing:0.5px;">GRAPHICS QUALITY</strong>
+            <span id="mobile-fps-readout" style="font-family:monospace; color:#5eead4;">60 FPS</span>
+        </div>
+        <div style="display:flex; gap:5px; margin-bottom:8px;">
+            <button class="toggle-btn gfx-preset-btn" data-preset="LOW" style="flex:1;">LOW</button>
+            <button class="toggle-btn gfx-preset-btn" data-preset="MEDIUM" style="flex:1;">MED</button>
+            <button class="toggle-btn gfx-preset-btn" data-preset="HIGH" style="flex:1;">HIGH</button>
+        </div>
+        <div style="display:flex; gap:5px;">
+            <button id="mobile-auto-fps-btn" class="toggle-btn active-preset" style="flex:1;">Auto FPS: ON</button>
+            <button id="mobile-fullscreen-btn" class="toggle-btn" style="flex:1;">Fullscreen</button>
+        </div>
+    </div>
+
     <div id="axis-fps-global">
         <div style="display:flex; align-items:center; justify-content:space-between;">
-            <div style="font-weight:700; color:#00d2ff">DEBUG</div>
-            <div style="font-size:11px; color:#aaa">v11 Engine Opt. (Max Graphics)</div>
+            <div style="font-weight:700; color:#00d2ff">DEBUG &amp; GRAPHICS</div>
+            <div id="preset-badge" style="font-size:10px; color:#5eead4; font-weight:700;">HIGH</div>
         </div>
-        <div class="small">FPS: <span id="fps-counter">0</span></div>
-        <div class="small" style="color: #ffaa00; margin-top: 6px;">POS: <span id="pos-display">0.00, 0.00, 0.00</span></div>
-        <div style="margin-top:8px;">
-            <label><input type="checkbox" id="axis-x"> <span style="color:#ff4444">X</span></label>
-            <label><input type="checkbox" id="axis-y"> <span style="color:#44ff44">Y</span></label>
-            <label><input type="checkbox" id="axis-z"> <span style="color:#4444ff">Z</span></label>
+        <div class="small">
+            FPS: <span id="fps-counter">0</span>
+            <span id="res-scale-display">(100% Res)</span>
         </div>
-        <div style="margin-top:8px; display:flex; gap:6px;">
-            <button id="show-global-axis" class="toggle-btn" style="flex:1; padding:6px 8px;">Global</button>
+        <div class="small" style="color: #ffaa00; margin-top: 4px;">POS: <span id="pos-display">0.00, 0.00, 0.00</span></div>
+        
+        <div style="margin-top:8px; font-size:10px; color:#94a3b8; text-transform:uppercase; letter-spacing:0.5px;">Quality Preset (Keys 1 / 2 / 3)</div>
+        <div style="margin-top:4px; display:flex; gap:5px;">
+            <button class="toggle-btn gfx-preset-btn" data-preset="LOW" style="flex:1;">Low</button>
+            <button class="toggle-btn gfx-preset-btn" data-preset="MEDIUM" style="flex:1;">Med</button>
+            <button class="toggle-btn gfx-preset-btn" data-preset="HIGH" style="flex:1;">High</button>
         </div>
-        <div style="margin-top:8px; display:flex; gap:6px;">
-            <button id="perf-toggle" class="toggle-btn" style="flex:1; padding:6px 8px;">Perf Mode</button>
-            <button id="shadow-toggle" class="toggle-btn" style="flex:1; padding:6px 8px;">Shadows</button>
+
+        <div style="margin-top:6px; display:flex; gap:5px;">
+            <button id="perf-toggle" class="toggle-btn" style="flex:1;">Perf Mode</button>
+            <button id="shadow-toggle" class="toggle-btn" style="flex:1;">Shadows</button>
+            <button id="adaptive-toggle" class="toggle-btn active-preset" style="flex:1;" title="Automatically adjusts resolution scale if FPS drops">Auto FPS</button>
+        </div>
+
+        <div style="margin-top:8px; display:flex; align-items:center; justify-content:space-between;">
+            <div>
+                <label><input type="checkbox" id="axis-x"> <span style="color:#ff4444">X</span></label>
+                <label><input type="checkbox" id="axis-y"> <span style="color:#44ff44">Y</span></label>
+                <label><input type="checkbox" id="axis-z"> <span style="color:#4444ff">Z</span></label>
+            </div>
+            <button id="show-global-axis" class="toggle-btn" style="padding:4px 8px;">Global</button>
         </div>
     </div>
 
@@ -205,12 +424,121 @@
         import { FXAAShader } from 'three/addons/shaders/FXAAShader.js';
         import { computeBoundsTree, disposeBoundsTree, acceleratedRaycast } from 'three-mesh-bvh';
 
+        // Enable fast BVH raycasting & asset caching
         THREE.BufferGeometry.prototype.computeBoundsTree = computeBoundsTree;
         THREE.BufferGeometry.prototype.disposeBoundsTree = disposeBoundsTree;
         THREE.Mesh.prototype.raycast = acceleratedRaycast;
         THREE.Cache.enabled = true;
 
-        const isMobile = window.innerWidth <= 900 || /Android|webOS|iPhone|iPad|iPod/i.test(navigator.userAgent);
+        const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+        const isMobileUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        const isMobile = window.innerWidth <= 900 || isMobileUA;
+
+        if (isTouchDevice && isMobile) {
+            document.body.classList.add('touch-active');
+        }
+
+        // Hardware heuristic for sensible default graphics preset
+        function detectInitialPreset() {
+            const saved = localStorage.getItem('game_graphics_preset');
+            if (saved && ['LOW', 'MEDIUM', 'HIGH'].includes(saved)) return saved;
+            const cores = navigator.hardwareConcurrency || 4;
+            const memory = navigator.deviceMemory || 4;
+            if (isMobile) {
+                return (cores >= 8 && memory >= 6 && window.innerWidth >= 750) ? 'MEDIUM' : 'LOW';
+            }
+            return (cores <= 4 || memory <= 4) ? 'MEDIUM' : 'HIGH';
+        }
+
+        // Functional Graphics Quality Presets
+        const GRAPHICS_PRESETS = {
+            LOW: {
+                name: 'LOW',
+                maxPixelRatio: 1.0,
+                shadows: false,
+                shadowMapSize: 1024,
+                shadowFrustum: 45,
+                shadowUpdateInterval: 3, // Update shadow map every N frames when enabled
+                postProcessing: false,
+                bloomStrength: 0.0,
+                anisotropyCap: 2,
+                envMapIntensity: 0.85,
+                cameraFar: 900,
+                fogDensity: 0.0018,
+                useHdrBackground: false,
+                exposure: 1.12
+            },
+            MEDIUM: {
+                name: 'MEDIUM',
+                maxPixelRatio: 1.35,
+                shadows: true,
+                shadowMapSize: 1536,
+                shadowFrustum: 60,
+                shadowUpdateInterval: 2,
+                postProcessing: false,
+                bloomStrength: 0.14,
+                anisotropyCap: 4,
+                envMapIntensity: 1.2,
+                cameraFar: 1450,
+                fogDensity: 0.0014,
+                useHdrBackground: true,
+                exposure: 1.14
+            },
+            HIGH: {
+                name: 'HIGH',
+                maxPixelRatio: 1.75,
+                shadows: true,
+                shadowMapSize: 2048,
+                shadowFrustum: 85,
+                shadowUpdateInterval: 1,
+                postProcessing: true,
+                bloomStrength: 0.2,
+                anisotropyCap: 16,
+                envMapIntensity: 1.45,
+                cameraFar: 2000,
+                fogDensity: 0.0011,
+                useHdrBackground: true,
+                exposure: 1.16
+            }
+        };
+
+        // Subtle Cinematic Color Grading & Crispness Shader Pass
+        const CinematicGradeShader = {
+            uniforms: {
+                tDiffuse: { value: null },
+                contrast: { value: 1.05 },
+                saturation: { value: 1.07 },
+                vignette: { value: 0.14 }
+            },
+            vertexShader: `
+                varying vec2 vUv;
+                void main() {
+                    vUv = uv;
+                    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                }
+            `,
+            fragmentShader: `
+                uniform sampler2D tDiffuse;
+                uniform float contrast;
+                uniform float saturation;
+                uniform float vignette;
+                varying vec2 vUv;
+                void main() {
+                    vec4 texel = texture2D(tDiffuse, vUv);
+                    vec3 col = texel.rgb;
+                    // Balanced S-curve contrast around mid-grey
+                    col = clamp((col - 0.5) * contrast + 0.5, 0.0, 1.0);
+                    // Natural saturation boost without clipping skin/sky tones
+                    float luma = dot(col, vec3(0.2126, 0.7152, 0.0722));
+                    col = mix(vec3(luma), col, saturation);
+                    // Subtle optical vignette
+                    vec2 uv = vUv * (1.0 - vUv.yx);
+                    float vig = clamp(pow(max(uv.x * uv.y * 15.0, 0.0001), vignette), 0.0, 1.0);
+                    col *= mix(0.86, 1.0, vig);
+                    gl_FragColor = vec4(col, texel.a);
+                }
+            `
+        };
 
         const CONFIG = {
             walkSpeed: 2.0, runSpeed: 6.5, gravity: -9.8 * 2.5, jumpForce: 8.0, 
@@ -224,7 +552,8 @@
         };
 
         const SEAT_POSITIONS = {
-            driver: new THREE.Vector3(0.1, 0.7, 0.2), passenger: new THREE.Vector3(-0.9, 0.7, 0.3)    
+            driver: new THREE.Vector3(0.1, 0.7, 0.2),
+            passenger: new THREE.Vector3(-0.9, 0.7, 0.3)    
         };
 
         const CAR_CAMERA_MODES = [
@@ -239,14 +568,17 @@
         };
 
         const CAMERA_MODES = [
-            { name: "TPS_CLOSE", dist: 1.2, height: 1.5 }, { name: "FPS", dist: 0.0, height: 1.65 },
-            { name: "TPS_MID", dist: 2.2, height: 1.7 }, { name: "TPS_FAR", dist: 4.5, height: 2.2 }
+            { name: "TPS_CLOSE", dist: 1.2, height: 1.5 },
+            { name: "FPS", dist: 0.0, height: 1.65 },
+            { name: "TPS_MID", dist: 2.2, height: 1.7 },
+            { name: "TPS_FAR", dist: 4.5, height: 2.2 }
         ];
         
         let currentCamIndex = 2;
         let currentCarCamIndex = 1; 
 
         let scene, camera, renderer, composer, clock;
+        let sunLight = null, sunTarget = null, ambientLight = null, hemiLight = null, cameraFillLight = null;
         let characters = [];
         let activeCharIndex = 0;
         
@@ -275,15 +607,26 @@
         let switchControlPoint = new THREE.Vector3();
 
         let isGameReady = false;
-        let performanceMode = isMobile;
-        let shadowsEnabled = !isMobile;
-        let composerEnabled = !isMobile;
+        let isTabPaused = false;
+        let currentPresetName = detectInitialPreset();
+        let performanceMode = (currentPresetName === 'LOW');
+        let shadowsEnabled = GRAPHICS_PRESETS[currentPresetName].shadows;
+        let composerEnabled = GRAPHICS_PRESETS[currentPresetName].postProcessing;
         let envMapTexture = null;
-        let bloomPass = null, fxaaPass = null;
+        let bloomPass = null, gradePass = null, fxaaPass = null;
         let maxAnisotropy = 1;
+        let shadowFrameCounter = 0;
+
+        // Adaptive Performance State
+        let adaptivePerfEnabled = localStorage.getItem('game_adaptive_perf') !== 'false';
+        let dynamicResScale = 1.0;
+        let rollingFps = 60.0;
+        let lastAdaptiveAdjustTime = 0;
 
         let collidableMeshList = []; 
         let terrainMeshList = []; 
+        let trackedMaterials = [];
+        let trackedTextures = [];
         
         let downRay = new THREE.Raycaster(); downRay.far = 4.0; downRay.firstHitOnly = true; 
         let forwardRay = new THREE.Raycaster(); forwardRay.far = 1.5; forwardRay.firstHitOnly = true; 
@@ -303,7 +646,8 @@
 
         let axisGroup = null, axisX = null, axisY = null, axisZ = null;
         let showGlobalAxis = false;
-        let fpsCounterEl = null, _frameCount = 0, _lastFpsTime = performance.now();
+        let fpsCounterEl = null, mobileFpsEl = null, resScaleEl = null;
+        let _frameCount = 0, _lastFpsTime = performance.now();
         let _lastDOMUpdate = 0; 
 
         const _vDir = new THREE.Vector3();
@@ -311,9 +655,13 @@
         const _vTarget = new THREE.Vector3();
         const _vForward = new THREE.Vector3();
         const _vRight = new THREE.Vector3();
+        const _vUp = new THREE.Vector3(0, 1, 0);
         const _vDown = new THREE.Vector3(0, -1, 0); 
         const _vTemp1 = new THREE.Vector3();
         const _vTemp2 = new THREE.Vector3();
+        const _vTemp3 = new THREE.Vector3();
+        const _vMidPoint = new THREE.Vector3();
+        const _vSunOffset = new THREE.Vector3(75, 150, 75);
 
         const loadingManager = new THREE.LoadingManager();
 
@@ -323,45 +671,66 @@
         function init() {
             setupLoadingManager();
 
-            renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" }); 
-            renderer.setPixelRatio(isMobile ? 1 : Math.min(window.devicePixelRatio || 1, 1.5));
+            const initialPreset = GRAPHICS_PRESETS[currentPresetName];
+
+            renderer = new THREE.WebGLRenderer({
+                antialias: true,
+                powerPreference: "high-performance",
+                stencil: false,
+                depth: true
+            }); 
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, initialPreset.maxPixelRatio));
             renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.shadowMap.enabled = shadowsEnabled; 
-            renderer.shadowMap.type = isMobile ? THREE.PCFShadowMap : THREE.PCFSoftShadowMap;
+            renderer.shadowMap.enabled = initialPreset.shadows; 
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            renderer.shadowMap.autoUpdate = false; // Controlled manually for stability & performance
             renderer.outputColorSpace = THREE.SRGBColorSpace;
             renderer.toneMapping = THREE.ACESFilmicToneMapping;
-            renderer.toneMappingExposure = 1.2;
+            renderer.toneMappingExposure = initialPreset.exposure;
             document.body.appendChild(renderer.domElement);
 
-            maxAnisotropy = Math.min(renderer.capabilities.getMaxAnisotropy(), isMobile ? 4 : 8);
+            const hwMaxAniso = renderer.capabilities.getMaxAnisotropy();
+            maxAnisotropy = Math.min(hwMaxAniso, initialPreset.anisotropyCap);
 
             scene = new THREE.Scene();
             scene.background = new THREE.Color(0x8cb6d9);
-            scene.fog = new THREE.FogExp2(0x8cb6d9, 0.0015);
+            scene.fog = new THREE.FogExp2(0x8cb6d9, initialPreset.fogDensity);
             clock = new THREE.Clock();
 
-            camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 2000);
+            camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, initialPreset.cameraFar);
             scene.add(camera);
 
-            const ambientLight = new THREE.AmbientLight(0xffffff, 0.85); 
+            // Balanced natural ambient & hemisphere lighting
+            ambientLight = new THREE.AmbientLight(0xf4f8ff, 0.72); 
             scene.add(ambientLight);
 
-            const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 0.8);
-            hemiLight.position.set(0, 50, 0);
+            hemiLight = new THREE.HemisphereLight(0xdbeafe, 0x423a32, 0.85);
+            hemiLight.position.set(0, 80, 0);
             scene.add(hemiLight);
 
-            const cameraFillLight = new THREE.PointLight(0xffffff, 0.6, 30);
-            cameraFillLight.position.set(0, 0, 0); 
+            cameraFillLight = new THREE.PointLight(0xeef6ff, 0.45, 28);
+            cameraFillLight.position.set(0, 0.4, 0); 
             camera.add(cameraFillLight);
 
-            const sunLight = new THREE.DirectionalLight(0xfff5e6, 3.5);
-            sunLight.position.set(100, 200, 100);
-            sunLight.castShadow = true;
-            sunLight.shadow.mapSize.set(isMobile ? 1024 : 2048, isMobile ? 1024 : 2048); 
-            sunLight.shadow.camera.left = -250; sunLight.shadow.camera.right = 250;
-            sunLight.shadow.camera.top = 250; sunLight.shadow.camera.bottom = -250;
-            sunLight.shadow.camera.near = 0.5; sunLight.shadow.camera.far = 1000;
-            sunLight.shadow.bias = -0.0005;
+            // Stabilized directional sun light that tracks the active player/car
+            sunLight = new THREE.DirectionalLight(0xfff4e0, 3.2);
+            sunTarget = new THREE.Object3D();
+            sunTarget.position.copy(SPAWN_POINTS.player1);
+            scene.add(sunTarget);
+            sunLight.target = sunTarget;
+            sunLight.position.copy(SPAWN_POINTS.player1).add(_vSunOffset);
+            sunLight.castShadow = initialPreset.shadows;
+            sunLight.shadow.mapSize.set(initialPreset.shadowMapSize, initialPreset.shadowMapSize); 
+            
+            const f = initialPreset.shadowFrustum;
+            sunLight.shadow.camera.left = -f;
+            sunLight.shadow.camera.right = f;
+            sunLight.shadow.camera.top = f;
+            sunLight.shadow.camera.bottom = -f;
+            sunLight.shadow.camera.near = 10;
+            sunLight.shadow.camera.far = 350;
+            sunLight.shadow.bias = -0.00035;
+            sunLight.shadow.normalBias = 0.02;
             scene.add(sunLight);
 
             pmremGenerator = new THREE.PMREMGenerator(renderer);
@@ -371,9 +740,15 @@
                 try {
                     envMapTexture = pmremGenerator.fromEquirectangular(hdrTexture).texture;
                     scene.environment = envMapTexture;
-                    if (!performanceMode) scene.background = envMapTexture;
+                    if (GRAPHICS_PRESETS[currentPresetName].useHdrBackground) {
+                        scene.background = envMapTexture;
+                    }
                 } catch (e) {}
                 hdrTexture.dispose();
+                if (pmremGenerator) {
+                    pmremGenerator.dispose();
+                    pmremGenerator = null;
+                }
             }, undefined, function(err) {});
 
             createAxisHelpers(5);
@@ -391,6 +766,7 @@
                         child.receiveShadow = true;
                         child.matrixAutoUpdate = false;
                         child.updateMatrix();
+                        child.frustumCulled = true;
 
                         if (child.geometry) child.geometry.computeBoundsTree();
 
@@ -398,19 +774,12 @@
                         terrainMeshList.push(child);
 
                         if (child.material) {
-                            child.material.metalness = child.material.metalness !== undefined ? child.material.metalness : 0.1;
-                            child.material.roughness = performanceMode ? 0.6 : (child.material.roughness || 0.4);
-                            child.material.envMapIntensity = performanceMode ? 0.8 : 1.5; 
-                            child.material.side = THREE.FrontSide;
-                            
-                            if(child.material.map) child.material.map.anisotropy = maxAnisotropy;
-                            if(child.material.normalMap) child.material.normalMap.anisotropy = maxAnisotropy;
-
-                            if(child.material.isMeshStandardMaterial) child.material.needsUpdate = true;
+                            enhanceMaterialQuality(child.material, true);
                         }
                     }
                 });
                 scene.add(map);
+                renderer.shadowMap.needsUpdate = true;
             });
 
             setupPostProcessing();
@@ -419,19 +788,68 @@
             loadAssets();
 
             fpsCounterEl = document.getElementById('fps-counter');
+            mobileFpsEl = document.getElementById('mobile-fps-readout');
+            resScaleEl = document.getElementById('res-scale-display');
             bindAxisUI();
-            applyPerformanceSettings(performanceMode);
+            applyGraphicsPreset(currentPresetName, false);
+        }
+
+        function enhanceMaterialQuality(matOrArray, isEnvironment = false) {
+            const processSingleMat = (mat) => {
+                if (!mat) return;
+                if (!trackedMaterials.includes(mat)) trackedMaterials.push(mat);
+
+                const preset = GRAPHICS_PRESETS[currentPresetName];
+                if (isEnvironment) {
+                    if (mat.metalness === undefined) mat.metalness = 0.08;
+                    if (mat.roughness === undefined || mat.roughness === 1) mat.roughness = 0.55;
+                    mat.side = THREE.FrontSide;
+                } else {
+                    if (mat.shininess !== undefined) mat.shininess = Math.max(mat.shininess, 35);
+                }
+
+                mat.envMapIntensity = preset.envMapIntensity;
+
+                const registerTex = (tex, isColorMap) => {
+                    if (!tex) return;
+                    if (isColorMap) tex.colorSpace = THREE.SRGBColorSpace;
+                    tex.anisotropy = maxAnisotropy;
+                    if (tex.generateMipmaps !== false) {
+                        tex.minFilter = THREE.LinearMipmapLinearFilter;
+                        tex.magFilter = THREE.LinearFilter;
+                    }
+                    tex.needsUpdate = true;
+                    if (!trackedTextures.includes(tex)) trackedTextures.push(tex);
+                };
+
+                registerTex(mat.map, true);
+                registerTex(mat.emissiveMap, true);
+                registerTex(mat.normalMap, false);
+                registerTex(mat.roughnessMap, false);
+                registerTex(mat.metalnessMap, false);
+                registerTex(mat.aoMap, false);
+
+                mat.needsUpdate = true;
+            };
+
+            if (Array.isArray(matOrArray)) matOrArray.forEach(processSingleMat);
+            else processSingleMat(matOrArray);
         }
 
         function setupLoadingManager() {
             loadingManager.onProgress = function(url, itemsLoaded, itemsTotal) {
-                const percent = Math.floor((itemsLoaded / itemsTotal) * 100);
-                document.getElementById('loading-text').innerText = `LOADING ${percent}%`;
-                document.getElementById('loading-bar-fill').style.width = `${percent}%`;
+                const percent = Math.min(100, Math.floor((itemsLoaded / Math.max(1, itemsTotal)) * 100));
+                const textEl = document.getElementById('loading-text');
+                const barEl = document.getElementById('loading-bar-fill');
+                if (textEl) textEl.innerText = `LOADING ${percent}%`;
+                if (barEl) barEl.style.width = `${percent}%`;
             };
 
             loadingManager.onLoad = function() {
-                renderer.compile(scene, camera);
+                try {
+                    renderer.compile(scene, camera);
+                    renderer.shadowMap.needsUpdate = true;
+                } catch (e) {}
 
                 document.getElementById('loading-text').innerText = "READY TO PLAY";
                 document.getElementById('loading-bar-fill').style.width = `100%`;
@@ -445,6 +863,7 @@
                     setTimeout(() => {
                         overlay.style.display = 'none';
                         isGameReady = true;
+                        clock.getDelta(); // Reset accumulated delta
                     }, 600);
                     
                     if (listener && listener.context && listener.context.state === 'suspended') {
@@ -506,16 +925,9 @@
                         if (obj.isMesh) {
                             obj.castShadow = shadowsEnabled;
                             obj.receiveShadow = true;
+                            obj.frustumCulled = true;
                             if (obj.material) {
-                                const processMat = (mat) => {
-                                    if (mat.map) { mat.map.anisotropy = maxAnisotropy; mat.map.colorSpace = THREE.SRGBColorSpace; }
-                                    if (mat.normalMap) mat.normalMap.anisotropy = maxAnisotropy;
-                                    mat.envMapIntensity = 1.2;
-                                    if(mat.shininess !== undefined) mat.shininess = Math.max(mat.shininess, 30);
-                                    mat.needsUpdate = true;
-                                };
-                                if (Array.isArray(obj.material)) obj.material.forEach(processMat);
-                                else processMat(obj.material);
+                                enhanceMaterialQuality(obj.material, false);
                             }
                         }
                     });
@@ -579,13 +991,16 @@
                 
                 carData.mesh.traverse(c => {
                     if (c.isMesh) { 
-                        c.castShadow = true; 
+                        c.castShadow = shadowsEnabled; 
                         c.receiveShadow = true; 
+                        c.frustumCulled = true;
                         if (c.geometry) { c.geometry.computeBoundsTree(); }
+                        if (c.material) { enhanceMaterialQuality(c.material, false); }
                         collidableMeshList.push(c); 
                     }
                 });
                 scene.add(carData.mesh);
+                renderer.shadowMap.needsUpdate = true;
 
                 carData.mixer = new THREE.AnimationMixer(carData.mesh);
                 try {
@@ -608,9 +1023,9 @@
             const wheel = document.getElementById('emote-wheel');
             wheel.style.display = isEmoteWheelOpen ? 'block' : 'none';
             if (isEmoteWheelOpen) {
-                document.exitPointerLock();
+                if (document.pointerLockElement) document.exitPointerLock();
             } else {
-                if (!isMobile) document.body.requestPointerLock();
+                if (!isMobile && !isTouchDevice) document.body.requestPointerLock();
             }
         }
 
@@ -619,12 +1034,13 @@
             
             isEmoteWheelOpen = false;
             document.getElementById('emote-wheel').style.display = 'none';
-            if (!isMobile) document.body.requestPointerLock();
+            const cineBtn = document.getElementById('btn-cine-mobile');
+            if (cineBtn && (isMobile || isTouchDevice)) cineBtn.style.display = 'flex';
+            if (!isMobile && !isTouchDevice) document.body.requestPointerLock();
 
             isEmoting = true;
-            cinematicAngle = 0; // Reset orbit angle for L-key camera
+            cinematicAngle = 0;
 
-            // Handle Optional Music seamlessly
             if (currentEmoteSound && currentEmoteSound.isPlaying) {
                 currentEmoteSound.stop();
             }
@@ -635,13 +1051,11 @@
                 currentEmoteSound = null;
             }
 
-            // Automatic Grounded Side-by-Side Positioning
             const activeChar = characters[activeCharIndex];
-            const basePos = activeChar.mesh.position.clone();
+            _vTemp1.copy(activeChar.mesh.position);
             const baseRot = activeChar.mesh.rotation.y;
             
-            // Calculate right vector to place characters side-by-side
-            const rightVector = new THREE.Vector3(1, 0, 0).applyAxisAngle(new THREE.Vector3(0, 1, 0), baseRot);
+            _vRight.set(1, 0, 0).applyAxisAngle(_vUp, baseRot);
 
             characters.forEach((c, index) => {
                 if (!c.preEmotePos) c.preEmotePos = new THREE.Vector3();
@@ -651,54 +1065,55 @@
                 c.velocity.set(0, 0, 0);
                 c.isFollowing = false;
                 
-                // Offset: Active char to the left (-0.8), follower to the right (+0.8)
                 const sideOffset = (index - (characters.length - 1) / 2) * 1.6; 
-                const targetPos = basePos.clone().add(rightVector.clone().multiplyScalar(sideOffset));
+                _vTemp2.copy(_vTemp1).addScaledVector(_vRight, sideOffset);
 
-                // Snap precisely to ground so they don't clip through map
-                const rayPos = targetPos.clone();
-                rayPos.y += 2.0;
-                downRay.set(rayPos, _vDown);
+                _vTemp3.copy(_vTemp2);
+                _vTemp3.y += 2.0;
+                downRay.set(_vTemp3, _vDown);
                 const hits = downRay.intersectObjects(terrainMeshList, false);
                 if (hits.length > 0) {
-                    targetPos.y = hits[0].point.y;
+                    _vTemp2.y = hits[0].point.y;
                 }
 
-                c.mesh.position.copy(targetPos);
+                c.mesh.position.copy(_vTemp2);
                 c.mesh.rotation.y = baseRot;
                 
-                // Play synchronous animations
                 if (c.actions[name]) {
                     const prev = c.activeAction;
                     c.activeAction = c.actions[name];
                     if (prev && prev !== c.activeAction) prev.fadeOut(0.2);
                     
-                    // Force time to 0 to prevent drift
                     c.activeAction.reset().fadeIn(0.2).play();
                     c.activeAction.time = 0; 
                 }
             });
+            renderer.shadowMap.needsUpdate = true;
         }
 
         function cancelEmote() {
             if (!isEmoting) return;
             isEmoting = false;
             if (isCinematicMode) isCinematicMode = false;
+            const cineBtn = document.getElementById('btn-cine-mobile');
+            if (cineBtn) {
+                cineBtn.style.display = 'none';
+                cineBtn.classList.remove('active-toggle');
+            }
             
-            // Stop looping optional audio
             if (currentEmoteSound && currentEmoteSound.isPlaying) {
                 currentEmoteSound.stop();
                 currentEmoteSound = null;
             }
             
             characters.forEach((c) => {
-                // Restore pre-emote positions cleanly
-                if(c.preEmotePos) {
+                if (c.preEmotePos) {
                     c.mesh.position.copy(c.preEmotePos);
                     c.mesh.rotation.y = c.preEmoteRot;
                 }
                 fadeToAction(c, 'idle', 0.2);
             });
+            renderer.shadowMap.needsUpdate = true;
         }
 
         function toggleUI() {
@@ -707,63 +1122,239 @@
         }
 
         function setupPostProcessing() {
-            if (isMobile) return; 
-
             composer = new EffectComposer(renderer);
             composer.addPass(new RenderPass(scene, camera));
             
-            bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.5, 0.4, 0.85);
-            bloomPass.threshold = 0.80; bloomPass.strength = 0.25; bloomPass.radius = 0.5;
+            bloomPass = new UnrealBloomPass(
+                new THREE.Vector2(window.innerWidth, window.innerHeight),
+                0.2, // subtle realistic bloom strength
+                0.45,
+                0.86
+            );
             composer.addPass(bloomPass);
+
+            gradePass = new ShaderPass(CinematicGradeShader);
+            composer.addPass(gradePass);
             
             composer.addPass(new OutputPass());
             
             fxaaPass = new ShaderPass(FXAAShader);
-            fxaaPass.material.uniforms['resolution'].value.x = 1 / window.innerWidth;
-            fxaaPass.material.uniforms['resolution'].value.y = 1 / window.innerHeight;
+            updatePostProcessingSize();
             composer.addPass(fxaaPass);
         }
 
-        function applyPerformanceSettings(enablePerf) {
-            performanceMode = !!enablePerf;
-            
-            const pr = performanceMode ? 1 : Math.min(window.devicePixelRatio || 1, 1.5);
-            renderer.setPixelRatio(pr);
-            
-            composerEnabled = !performanceMode; 
-            
-            if (performanceMode) {
-                scene.background = new THREE.Color(0x8cb6d9);
-            } else {
-                if (envMapTexture) { scene.background = envMapTexture; }
+        function updatePostProcessingSize() {
+            const pr = renderer.getPixelRatio();
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            if (composer) {
+                composer.setPixelRatio(pr);
+                composer.setSize(width, height);
+            }
+            if (fxaaPass) {
+                fxaaPass.material.uniforms['resolution'].value.x = 1 / (width * pr);
+                fxaaPass.material.uniforms['resolution'].value.y = 1 / (height * pr);
+            }
+        }
+
+        function applyGraphicsPreset(presetKey, saveToStorage = true) {
+            if (!GRAPHICS_PRESETS[presetKey]) presetKey = 'MEDIUM';
+            currentPresetName = presetKey;
+            if (saveToStorage) {
+                try { localStorage.setItem('game_graphics_preset', presetKey); } catch (e) {}
             }
 
-            const perfBtn = document.getElementById('perf-toggle');
-            if (perfBtn) perfBtn.textContent = `Perf: ${performanceMode ? 'ON' : 'OFF'}`;
+            const preset = GRAPHICS_PRESETS[presetKey];
+            performanceMode = (presetKey === 'LOW');
+            dynamicResScale = 1.0;
+
+            // 1. Update Pixel Ratio & Resolution
+            const targetPR = Math.min(window.devicePixelRatio || 1, preset.maxPixelRatio) * dynamicResScale;
+            renderer.setPixelRatio(targetPR);
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.toneMappingExposure = preset.exposure;
+
+            // 2. Update Anisotropy & Material EnvMap Intensity
+            const hwMaxAniso = renderer.capabilities.getMaxAnisotropy();
+            maxAnisotropy = Math.min(hwMaxAniso, preset.anisotropyCap);
+            trackedTextures.forEach(tex => {
+                if (tex && tex.anisotropy !== maxAnisotropy) {
+                    tex.anisotropy = maxAnisotropy;
+                    tex.needsUpdate = true;
+                }
+            });
+            trackedMaterials.forEach(mat => {
+                if (mat) {
+                    mat.envMapIntensity = preset.envMapIntensity;
+                    mat.needsUpdate = true;
+                }
+            });
+
+            // 3. Update Shadows & Shadow Map Resolution
+            shadowsEnabled = preset.shadows;
+            renderer.shadowMap.enabled = shadowsEnabled;
+            renderer.shadowMap.type = (presetKey === 'LOW') ? THREE.PCFShadowMap : THREE.PCFSoftShadowMap;
+            if (sunLight) {
+                sunLight.castShadow = shadowsEnabled;
+                const f = preset.shadowFrustum;
+                sunLight.shadow.camera.left = -f;
+                sunLight.shadow.camera.right = f;
+                sunLight.shadow.camera.top = f;
+                sunLight.shadow.camera.bottom = -f;
+                sunLight.shadow.camera.updateProjectionMatrix();
+
+                if (sunLight.shadow.mapSize.width !== preset.shadowMapSize) {
+                    sunLight.shadow.mapSize.set(preset.shadowMapSize, preset.shadowMapSize);
+                    if (sunLight.shadow.map) {
+                        sunLight.shadow.map.dispose();
+                        sunLight.shadow.map = null;
+                    }
+                }
+            }
+
+            scene.traverse((obj) => {
+                if (obj.isMesh) {
+                    obj.castShadow = shadowsEnabled;
+                    obj.receiveShadow = shadowsEnabled;
+                }
+            });
+            renderer.shadowMap.needsUpdate = true;
+
+            // 4. Update Post-Processing & Fog/Background
+            composerEnabled = preset.postProcessing;
+            if (bloomPass) bloomPass.strength = preset.bloomStrength;
+            updatePostProcessingSize();
+
+            if (scene.fog) scene.fog.density = preset.fogDensity;
+            if (camera) {
+                camera.far = preset.cameraFar;
+                camera.updateProjectionMatrix();
+            }
+
+            if (preset.useHdrBackground && envMapTexture) {
+                scene.background = envMapTexture;
+            } else {
+                scene.background = new THREE.Color(0x8cb6d9);
+            }
+
+            updateSettingsUI();
+        }
+
+        function applyPerformanceSettings(enablePerf) {
+            applyGraphicsPreset(enablePerf ? 'LOW' : (isMobile ? 'MEDIUM' : 'HIGH'));
         }
 
         function toggleShadows() {
             shadowsEnabled = !shadowsEnabled;
             renderer.shadowMap.enabled = shadowsEnabled;
+            if (sunLight) sunLight.castShadow = shadowsEnabled;
             
             scene.traverse((obj) => { 
                 if (obj.isMesh) {
                     obj.castShadow = shadowsEnabled;
                     obj.receiveShadow = shadowsEnabled;
-                    if(obj.material) obj.material.needsUpdate = true;
+                    if (obj.material) obj.material.needsUpdate = true;
                 } 
             });
-            
+            renderer.shadowMap.needsUpdate = true;
+            updateSettingsUI();
+        }
+
+        function updateSettingsUI() {
+            const perfBtn = document.getElementById('perf-toggle');
+            if (perfBtn) {
+                perfBtn.textContent = `Perf: ${performanceMode ? 'ON' : 'OFF'}`;
+                perfBtn.classList.toggle('active-preset', performanceMode);
+            }
             const shadowBtn = document.getElementById('shadow-toggle');
-            if (shadowBtn) shadowBtn.textContent = `Shadows: ${shadowsEnabled ? 'ON' : 'OFF'}`;
+            if (shadowBtn) {
+                shadowBtn.textContent = `Shadows: ${shadowsEnabled ? 'ON' : 'OFF'}`;
+                shadowBtn.classList.toggle('active-preset', shadowsEnabled);
+            }
+            const badge = document.getElementById('preset-badge');
+            if (badge) badge.textContent = currentPresetName;
+
+            document.querySelectorAll('.gfx-preset-btn').forEach(btn => {
+                btn.classList.toggle('active-preset', btn.getAttribute('data-preset') === currentPresetName);
+            });
+
+            const autoBtn = document.getElementById('adaptive-toggle');
+            if (autoBtn) autoBtn.classList.toggle('active-preset', adaptivePerfEnabled);
+            const mobAutoBtn = document.getElementById('mobile-auto-fps-btn');
+            if (mobAutoBtn) {
+                mobAutoBtn.textContent = `Auto FPS: ${adaptivePerfEnabled ? 'ON' : 'OFF'}`;
+                mobAutoBtn.classList.toggle('active-preset', adaptivePerfEnabled);
+            }
+            if (resScaleEl) {
+                resScaleEl.textContent = `(${Math.round(dynamicResScale * 100)}% Res)`;
+            }
+        }
+
+        function updateAdaptivePerformance(realDt, now) {
+            if (!adaptivePerfEnabled || realDt <= 0 || isSwitching) return;
+
+            const instantFps = 1.0 / realDt;
+            rollingFps = rollingFps * 0.94 + instantFps * 0.06;
+
+            // Cooldown of 3.5 seconds between adjustments to prevent constant switching
+            if (now - lastAdaptiveAdjustTime < 3500) return;
+
+            const preset = GRAPHICS_PRESETS[currentPresetName];
+
+            if (rollingFps < 28 && dynamicResScale > 0.68) {
+                // Step down internal pixel ratio smoothly when sustained FPS drops
+                dynamicResScale = Math.max(0.65, +(dynamicResScale - 0.12).toFixed(2));
+                const newPR = Math.max(0.65, Math.min(window.devicePixelRatio || 1, preset.maxPixelRatio) * dynamicResScale);
+                renderer.setPixelRatio(newPR);
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                if (composerEnabled && dynamicResScale <= 0.78) {
+                    composerEnabled = false; // Shed post-processing cost if struggling
+                }
+                updatePostProcessingSize();
+                updateSettingsUI();
+                lastAdaptiveAdjustTime = now;
+            } else if (rollingFps > 54 && dynamicResScale < 1.0) {
+                // Gradually restore resolution when performance recovers
+                dynamicResScale = Math.min(1.0, +(dynamicResScale + 0.1).toFixed(2));
+                const newPR = Math.min(window.devicePixelRatio || 1, preset.maxPixelRatio) * dynamicResScale;
+                renderer.setPixelRatio(newPR);
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                if (dynamicResScale >= 0.95 && preset.postProcessing) {
+                    composerEnabled = true;
+                }
+                updatePostProcessingSize();
+                updateSettingsUI();
+                lastAdaptiveAdjustTime = now;
+            }
+        }
+
+        function updateStabilizedShadows() {
+            if (!shadowsEnabled || !sunLight || characters.length === 0) return;
+
+            const preset = GRAPHICS_PRESETS[currentPresetName];
+            shadowFrameCounter++;
+            if (shadowFrameCounter % preset.shadowUpdateInterval !== 0) return;
+
+            const focusObj = (carData.active && carData.mesh) ? carData.mesh : characters[activeCharIndex].mesh;
+            if (!focusObj) return;
+
+            // Snap shadow focus to world texel grid increments to eliminate shadow edge shimmering
+            const texelSize = (preset.shadowFrustum * 2) / preset.shadowMapSize;
+            const snapGrid = texelSize * 2.0;
+            const sx = Math.round(focusObj.position.x / snapGrid) * snapGrid;
+            const sy = Math.round(focusObj.position.y / snapGrid) * snapGrid;
+            const sz = Math.round(focusObj.position.z / snapGrid) * snapGrid;
+
+            sunTarget.position.set(sx, sy, sz);
+            sunTarget.updateMatrixWorld();
+            sunLight.position.set(sx + _vSunOffset.x, sy + _vSunOffset.y, sz + _vSunOffset.z);
+            renderer.shadowMap.needsUpdate = true;
         }
 
         function setupAudio() {
             listener = new THREE.AudioListener();
             camera.add(listener);
             const audioLoader = new THREE.AudioLoader(loadingManager);
-            
-            // Un-tracked audio loader allows MP3s to silently fail without halting game load
             const optionalAudioLoader = new THREE.AudioLoader(); 
             
             function loadSound(name, file, loop = false, volume = 1.0) {
@@ -779,9 +1370,7 @@
                 optionalAudioLoader.load(file, buffer => {
                     sound.setBuffer(buffer); sound.setLoop(true); sound.setVolume(0.8);
                     emoteSounds[name] = sound;
-                }, undefined, () => {
-                    // Silently ignore missing MP3 files so the game doesn't crash
-                });
+                }, undefined, () => {});
             }
             
             loadSound('walk', 'walk.mp3', true, 0.4);
@@ -797,7 +1386,6 @@
             loadSound('car_reverse', 'car_reverse.mp3', true, 0.0);
             loadSound('car_horn', 'car_horn.mp3', false, 1.0);
 
-            // Fetch optional MP3s in the background
             EMOTE_NAMES.forEach(name => loadOptionalSound(name, `${name}.mp3`));
         }
 
@@ -834,10 +1422,48 @@
                 globalBtn.textContent = showGlobalAxis ? 'Global On' : 'Global';
                 axisGroup.visible = showGlobalAxis || axisX.visible || axisY.visible || axisZ.visible;
             });
+
             document.getElementById('perf-toggle').addEventListener('click', () => applyPerformanceSettings(!performanceMode));
             document.getElementById('shadow-toggle').addEventListener('click', () => toggleShadows());
-            
-            document.getElementById('shadow-toggle').textContent = `Shadows: ${shadowsEnabled ? 'ON' : 'OFF'}`;
+
+            const toggleAdaptive = () => {
+                adaptivePerfEnabled = !adaptivePerfEnabled;
+                try { localStorage.setItem('game_adaptive_perf', String(adaptivePerfEnabled)); } catch (e) {}
+                if (!adaptivePerfEnabled && dynamicResScale !== 1.0) {
+                    applyGraphicsPreset(currentPresetName, false);
+                } else {
+                    updateSettingsUI();
+                }
+            };
+            document.getElementById('adaptive-toggle').addEventListener('click', toggleAdaptive);
+            document.getElementById('mobile-auto-fps-btn').addEventListener('click', toggleAdaptive);
+
+            document.querySelectorAll('.gfx-preset-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const preset = btn.getAttribute('data-preset');
+                    applyGraphicsPreset(preset, true);
+                });
+                btn.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const preset = btn.getAttribute('data-preset');
+                    applyGraphicsPreset(preset, true);
+                }, { passive: false });
+            });
+
+            const fsBtn = document.getElementById('mobile-fullscreen-btn');
+            if (fsBtn) {
+                fsBtn.addEventListener('click', () => {
+                    if (!document.fullscreenElement && document.documentElement.requestFullscreen) {
+                        document.documentElement.requestFullscreen().catch(() => {});
+                    } else if (document.exitFullscreen) {
+                        document.exitFullscreen().catch(() => {});
+                    }
+                });
+            }
+
+            updateSettingsUI();
         }
 
         function toggleCarInteraction() {
@@ -886,6 +1512,7 @@
                     if (sounds.run && sounds.run.isPlaying) sounds.run.stop();
                 }
             }
+            renderer.shadowMap.needsUpdate = true;
         }
 
         function triggerCharacterSwitch() {
@@ -932,21 +1559,50 @@
         }
 
         function setupInputs() {
-            const unlockAudio = () => { if (listener && listener.context && listener.context.state === 'suspended') listener.context.resume(); };
+            const unlockAudio = () => {
+                if (listener && listener.context && listener.context.state === 'suspended') {
+                    listener.context.resume();
+                }
+            };
             document.addEventListener('click', unlockAudio);
-            document.addEventListener('touchstart', unlockAudio, {passive: true});
+            document.addEventListener('touchstart', () => {
+                unlockAudio();
+                if (!document.body.classList.contains('touch-active')) {
+                    document.body.classList.add('touch-active');
+                }
+            }, {passive: true});
+
+            // Safe pause/resume when browser tab loses focus
+            document.addEventListener('visibilitychange', () => {
+                if (document.hidden) {
+                    isTabPaused = true;
+                    keys.w = keys.a = keys.s = keys.d = keys.shift = keys.space = false;
+                    joystick.active = false;
+                    if (listener && listener.context && listener.context.state === 'running') {
+                        listener.context.suspend();
+                    }
+                } else {
+                    isTabPaused = false;
+                    clock.getDelta();
+                    if (isGameReady && listener && listener.context && listener.context.state === 'suspended') {
+                        listener.context.resume();
+                    }
+                }
+            });
+
+            window.addEventListener('blur', () => {
+                keys.w = keys.a = keys.s = keys.d = keys.shift = keys.space = false;
+                joystick.active = false;
+            });
 
             document.addEventListener('keydown', e => {
-                const map = { KeyW:'w', KeyA:'a', KeyS:'s', KeyD:'d', ShiftLeft:'shift', Space:'space', KeyQ:'q', KeyE:'e', KeyF:'f' };
+                const map = { KeyW:'w', KeyA:'a', KeyS:'s', KeyD:'d', ShiftLeft:'shift', ShiftRight:'shift', Space:'space', KeyQ:'q', KeyE:'e', KeyF:'f' };
                 if (map[e.code] !== undefined) keys[map[e.code]] = true;
                 
                 if (e.code === 'KeyF') toggleCarInteraction();
                 if (e.code === 'KeyC') triggerCharacterSwitch();
-                
-                // M: Toggle UI visibility
                 if (e.code === 'KeyM') toggleUI();
 
-                // L: Cinematic Camera Mode
                 if (e.code === 'KeyL') {
                     if (isEmoting) isCinematicMode = !isCinematicMode;
                     else isCinematicMode = false;
@@ -954,13 +1610,11 @@
 
                 if (e.code === 'KeyE') {
                     if (carData.active) {
-                        // Car Horn
                         if (sounds.car_horn && sounds.car_horn.buffer) {
                             if (sounds.car_horn.isPlaying) sounds.car_horn.stop();
                             sounds.car_horn.play();
                         }
                     } else {
-                        // Emote Wheel
                         if (isEmoting) cancelEmote();
                         else toggleEmoteWheel();
                     }
@@ -975,10 +1629,13 @@
                 }
                 if (e.code === 'KeyO') applyPerformanceSettings(!performanceMode); 
                 if (e.code === 'KeyP') toggleShadows(); 
+                if (e.code === 'Digit1') applyGraphicsPreset('LOW', true);
+                if (e.code === 'Digit2') applyGraphicsPreset('MEDIUM', true);
+                if (e.code === 'Digit3') applyGraphicsPreset('HIGH', true);
             });
             
             document.addEventListener('keyup', e => {
-                const map = { KeyW:'w', KeyA:'a', KeyS:'s', KeyD:'d', ShiftLeft:'shift', Space:'space', KeyQ:'q', KeyE:'e', KeyF:'f' };
+                const map = { KeyW:'w', KeyA:'a', KeyS:'s', KeyD:'d', ShiftLeft:'shift', ShiftRight:'shift', Space:'space', KeyQ:'q', KeyE:'e', KeyF:'f' };
                 if (map[e.code] !== undefined) keys[map[e.code]] = false;
             });
 
@@ -995,12 +1652,11 @@
             });
 
             document.addEventListener('mousedown', (e) => {
-                if(e.pointerType === "touch" || window.innerWidth <= 900) return; 
-                if(isEmoteWheelOpen) return;
-                document.body.requestPointerLock();
+                if (e.pointerType === "touch" || window.innerWidth <= 900) return; 
+                if (isEmoteWheelOpen || e.target.closest('#axis-fps-global') || e.target.closest('#mobile-gfx-modal') || e.target.closest('#loading')) return;
+                if (document.body.requestPointerLock) document.body.requestPointerLock();
             });
 
-            // Emote Wheel DOM Bindings
             document.querySelectorAll('.emote-btn-item').forEach(btn => {
                 btn.addEventListener('click', (e) => { startEmote(e.target.getAttribute('data-emote')); });
                 btn.addEventListener('touchstart', (e) => { e.preventDefault(); startEmote(e.target.getAttribute('data-emote')); }, {passive: false});
@@ -1013,12 +1669,30 @@
                 e.preventDefault();
                 if (isEmoting) cancelEmote(); else toggleEmoteWheel();
                 btnEmoteMobile.classList.add('active-toggle');
-            });
-            btnEmoteMobile.addEventListener('touchend', e => { e.preventDefault(); btnEmoteMobile.classList.remove('active-toggle'); });
+            }, {passive: false});
+            btnEmoteMobile.addEventListener('touchend', e => { e.preventDefault(); btnEmoteMobile.classList.remove('active-toggle'); }, {passive: false});
+
+            const btnGfxMobile = document.getElementById('btn-gfx-mobile');
+            const mobileGfxModal = document.getElementById('mobile-gfx-modal');
+            btnGfxMobile.addEventListener('touchstart', e => {
+                e.preventDefault();
+                const isOpen = mobileGfxModal.style.display === 'block';
+                mobileGfxModal.style.display = isOpen ? 'none' : 'block';
+                btnGfxMobile.classList.toggle('active-toggle', !isOpen);
+            }, {passive: false});
+
+            const btnCineMobile = document.getElementById('btn-cine-mobile');
+            btnCineMobile.addEventListener('touchstart', e => {
+                e.preventDefault();
+                if (isEmoting) {
+                    isCinematicMode = !isCinematicMode;
+                    btnCineMobile.classList.toggle('active-toggle', isCinematicMode);
+                }
+            }, {passive: false});
 
             const lookZone = document.getElementById('touch-look-zone');
             lookZone.addEventListener('touchstart', e => {
-                if(e.target.classList.contains('touch-btn') || isSwitching) return; 
+                if (e.target.classList.contains('touch-btn') || isSwitching) return; 
                 if (touchLook.id !== null) return;
                 const t = e.changedTouches[0];
                 touchLook.id = t.identifier;
@@ -1027,6 +1701,7 @@
             }, {passive: false});
 
             lookZone.addEventListener('touchmove', e => {
+                e.preventDefault();
                 if (isSwitching) return;
                 for (let t of e.changedTouches) {
                     if (t.identifier === touchLook.id) {
@@ -1051,13 +1726,13 @@
             let joyRect = joyZone.getBoundingClientRect();
 
             const updateJoy = (x, y) => {
-                if(isSwitching) return;
+                if (isSwitching) return;
                 const cx = joyRect.left + joyRect.width / 2;
                 const cy = joyRect.top + joyRect.height / 2;
                 let dx = x - cx; let dy = y - cy;
                 const maxR = joyRect.width / 2;
                 const dist = Math.hypot(dx, dy);
-                if (dist > maxR) { dx = (dx/dist)*maxR; dy = (dy/dist)*maxR; }
+                if (dist > maxR) { dx = (dx / dist) * maxR; dy = (dy / dist) * maxR; }
                 joyKnob.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
                 joystick.x = dx / maxR;
                 joystick.y = dy / maxR;
@@ -1065,7 +1740,7 @@
 
             joyZone.addEventListener('touchstart', e => {
                 e.preventDefault();
-                if(isSwitching) return;
+                if (isSwitching) return;
                 joyRect = joyZone.getBoundingClientRect();
                 const t = e.changedTouches[0];
                 joystick.id = t.identifier;
@@ -1092,25 +1767,25 @@
             joyZone.addEventListener('touchcancel', endJoy);
 
             const btnJump = document.getElementById('btn-jump');
-            btnJump.addEventListener('touchstart', e => { e.preventDefault(); if(!isSwitching && !isEmoting) keys.space = true; btnJump.classList.add('active-toggle'); });
-            btnJump.addEventListener('touchend', e => { e.preventDefault(); keys.space = false; btnJump.classList.remove('active-toggle'); });
+            btnJump.addEventListener('touchstart', e => { e.preventDefault(); if (!isSwitching && !isEmoting) keys.space = true; btnJump.classList.add('active-toggle'); }, {passive: false});
+            btnJump.addEventListener('touchend', e => { e.preventDefault(); keys.space = false; btnJump.classList.remove('active-toggle'); }, {passive: false});
 
             const btnSwitchChar = document.getElementById('btn-switch-char');
             btnSwitchChar.addEventListener('touchstart', e => { 
                 e.preventDefault();
-                if(isEmoting) return;
+                if (isEmoting) return;
                 triggerCharacterSwitch();
                 btnSwitchChar.classList.add('active-toggle');
-            });
-            btnSwitchChar.addEventListener('touchend', e => { e.preventDefault(); btnSwitchChar.classList.remove('active-toggle'); });
+            }, {passive: false});
+            btnSwitchChar.addEventListener('touchend', e => { e.preventDefault(); btnSwitchChar.classList.remove('active-toggle'); }, {passive: false});
 
             const btnSprint = document.getElementById('btn-sprint');
             btnSprint.addEventListener('touchstart', e => { 
                 e.preventDefault(); 
-                if(isSwitching || isEmoting) return;
+                if (isSwitching || isEmoting) return;
                 mobileSprintToggle = !mobileSprintToggle; 
                 btnSprint.classList.toggle('active-toggle', mobileSprintToggle);
-            });
+            }, {passive: false});
 
             document.getElementById('btn-cam-swap').addEventListener('touchstart', e => {
                 e.preventDefault();
@@ -1119,13 +1794,13 @@
                 } else {
                     currentCamIndex = (currentCamIndex + 1) % CAMERA_MODES.length;
                 }
-            });
+            }, {passive: false});
 
             const btnInteract = document.getElementById('btn-interact');
             btnInteract.addEventListener('touchstart', e => {
                 e.preventDefault();
                 toggleCarInteraction();
-            });
+            }, {passive: false});
 
             const btnHorn = document.getElementById('btn-horn');
             btnHorn.addEventListener('touchstart', e => {
@@ -1135,23 +1810,21 @@
                     sounds.car_horn.play();
                 }
                 btnHorn.classList.add('active-toggle');
-            });
+            }, {passive: false});
             btnHorn.addEventListener('touchend', e => {
                 e.preventDefault();
                 btnHorn.classList.remove('active-toggle');
-            });
+            }, {passive: false});
 
-            window.addEventListener('resize', () => {
+            const handleResize = () => {
                 camera.aspect = window.innerWidth / window.innerHeight;
                 camera.updateProjectionMatrix();
                 renderer.setSize(window.innerWidth, window.innerHeight);
-                if (composer) composer.setSize(window.innerWidth, window.innerHeight);
-                if (fxaaPass) {
-                    fxaaPass.material.uniforms['resolution'].value.x = 1 / window.innerWidth;
-                    fxaaPass.material.uniforms['resolution'].value.y = 1 / window.innerHeight;
-                }
+                updatePostProcessingSize();
                 joyRect = joyZone.getBoundingClientRect();
-            });
+            };
+            window.addEventListener('resize', handleResize);
+            window.addEventListener('orientationchange', () => setTimeout(handleResize, 120));
         }
 
         function fadeToAction(charData, name, duration) {
@@ -1177,7 +1850,8 @@
                 btnF.style.display = 'flex';
                 btnHorn.style.display = 'flex'; 
                 
-                btnJump.style.display = 'none';
+                btnJump.style.display = 'flex'; // Keep brake accessible on mobile
+                btnJump.innerHTML = "BRAKE";
                 btnSwitch.style.display = 'none';
                 btnSprint.style.display = 'none';
                 btnEmoteMobile.style.display = 'none';
@@ -1185,9 +1859,10 @@
                 const dist = characters[activeCharIndex].mesh.position.distanceTo(carData.mesh.position);
                 
                 btnJump.style.display = 'flex';
+                btnJump.innerHTML = "JUMP";
                 btnSwitch.style.display = 'flex';
                 btnSprint.style.display = 'flex';
-                btnEmoteMobile.style.display = window.innerWidth <= 900 ? 'flex' : 'none';
+                btnEmoteMobile.style.display = (window.innerWidth <= 900 || document.body.classList.contains('touch-active')) ? 'flex' : 'none';
                 btnHorn.style.display = 'none'; 
 
                 if (dist < CAR_CONFIG.interactionDist) {
@@ -1338,7 +2013,7 @@
                     
                     const validHit = hits.find(hit => {
                         let current = hit.object;
-                        while(current) {
+                        while (current) {
                             if (current === carData.mesh) return false;
                             current = current.parent;
                         }
@@ -1350,30 +2025,28 @@
                     }
                 }
 
-                if (!carBlocked) {
+                if (!carBlocked && Math.abs(carData.speed) > 0.001) {
                     carData.mesh.position.addScaledVector(_vDir, carData.speed * dt);
-                } else {
+                    _vTemp2.copy(carData.mesh.position);
+                    _vTemp2.y += 2.0;
+                    downRay.set(_vTemp2, _vDown);
+                    const hits = downRay.intersectObjects(terrainMeshList, false);
+                    if (hits.length > 0) {
+                        carData.mesh.position.y = hits[0].point.y;
+                    }
+                } else if (carBlocked) {
                     carData.speed = 0; 
-                }
-
-                _vTemp2.copy(carData.mesh.position);
-                _vTemp2.y += 2.0;
-                downRay.set(_vTemp2, _vDown);
-                const hits = downRay.intersectObjects(terrainMeshList, false);
-                if (hits.length > 0) {
-                    carData.mesh.position.y = hits[0].point.y;
                 }
             }
             
             // --- CHARACTER PHYSICS ---
-            for(let i = 0; i < characters.length; i++) {
+            for (let i = 0; i < characters.length; i++) {
                 let charData = characters[i];
                 let charMesh = charData.mesh;
                 let isActive = (i === activeCharIndex);
 
                 if (charData.inCar) {
                     const isDriver = (i === activeCharIndex);
-                    
                     const localOffset = isDriver ? SEAT_POSITIONS.driver : SEAT_POSITIONS.passenger; 
                     _vTemp1.copy(localOffset).applyQuaternion(carData.mesh.quaternion);
                     
@@ -1491,6 +2164,11 @@
                     fadeToAction(charData, 'jump', 0.1);
                 }
 
+                // Skip vertical raycast if character is completely stationary on the ground
+                if (!isMoving && charData.onGround && !charData.isJumping && charData.velocity.y === 0) {
+                    continue;
+                }
+
                 if (!isEmoting && !charData.onGround && charData.velocity.y < -3.0 && !charData.isJumping) {
                     fadeToAction(charData, 'fall', 0.2);
                 }
@@ -1572,20 +2250,20 @@
             const p1 = characters[0].mesh.position;
             const p2 = characters[1].mesh.position;
             
-            const midPoint = new THREE.Vector3().addVectors(p1, p2).multiplyScalar(0.5);
+            _vMidPoint.addVectors(p1, p2).multiplyScalar(0.5);
             const baseRot = characters[activeCharIndex].mesh.rotation.y;
             
             cinematicAngle += dt * 0.15; 
             const orbitOffset = Math.sin(cinematicAngle) * 0.4; 
             
-            const forward = new THREE.Vector3(0, 0, 1).applyAxisAngle(new THREE.Vector3(0,1,0), baseRot + orbitOffset);
+            _vForward.set(0, 0, 1).applyAxisAngle(_vUp, baseRot + orbitOffset);
             
-            _vTarget.copy(midPoint).addScaledVector(forward, 4.5); 
+            _vTarget.copy(_vMidPoint).addScaledVector(_vForward, 4.5); 
             _vTarget.y += 1.5; 
             
             camera.position.lerp(_vTarget, 0.05); 
             
-            _vTemp1.copy(midPoint);
+            _vTemp1.copy(_vMidPoint);
             _vTemp1.y += 1.0;
             camera.lookAt(_vTemp1);
         }
@@ -1615,17 +2293,22 @@
 
         function animate() {
             requestAnimationFrame(animate);
-            if (!isGameReady) return;
+            if (!isGameReady || isTabPaused) return;
             
             const realDt = Math.min(clock.getDelta(), 0.1);
+            const now = performance.now();
             
             const gameTimeScale = isSwitching ? 0.1 : 1.0;
             const scaledDt = realDt * gameTimeScale;
             
-            characters.forEach(c => c.mixer.update(scaledDt));
+            for (let i = 0; i < characters.length; i++) {
+                characters[i].mixer.update(scaledDt);
+            }
+
             updatePhysics(scaledDt); 
             updateCarAudio(scaledDt); 
             checkCarProximity(); 
+            updateStabilizedShadows();
 
             if (isSwitching) {
                 handleCinematicSwitchCamera(realDt);
@@ -1637,13 +2320,15 @@
                 updateGameCamera(); 
             }
 
-            // PERFORMANCE: Throttle DOM position text writes to stop GC spikes
-            const now = performance.now();
-            if (now - _lastDOMUpdate > 150) {
+            updateAdaptivePerformance(realDt, now);
+
+            // Throttle DOM position text writes to prevent layout/GC spikes
+            if (now - _lastDOMUpdate > 200) {
                 if (characters.length > 0) {
                     const pos = characters[activeCharIndex].mesh.position;
-                    if(document.getElementById('pos-display')) {
-                        document.getElementById('pos-display').textContent = `${pos.x.toFixed(2)}, ${pos.y.toFixed(2)}, ${pos.z.toFixed(2)}`;
+                    const posEl = document.getElementById('pos-display');
+                    if (posEl) {
+                        posEl.textContent = `${pos.x.toFixed(2)}, ${pos.y.toFixed(2)}, ${pos.z.toFixed(2)}`;
                     }
                 }
                 _lastDOMUpdate = now;
@@ -1652,19 +2337,25 @@
             updateFps(now);
 
             if (axisGroup) {
-                axisGroup.visible = showGlobalAxis;
+                axisGroup.visible = showGlobalAxis || axisX.visible || axisY.visible || axisZ.visible;
             }
 
-            if (composer && composerEnabled && !performanceMode && !isMobile) composer.render();
-            else renderer.render(scene, camera);
+            if (composer && composerEnabled && !performanceMode) {
+                composer.render();
+            } else {
+                renderer.render(scene, camera);
+            }
         }
 
         function updateFps(now) {
             _frameCount++;
             const elapsed = (now - _lastFpsTime) / 1000;
             if (elapsed >= 0.5) {
-                if (fpsCounterEl) fpsCounterEl.textContent = Math.round((_frameCount / elapsed));
-                _frameCount = 0; _lastFpsTime = now;
+                const fpsVal = Math.round(_frameCount / elapsed);
+                if (fpsCounterEl) fpsCounterEl.textContent = fpsVal;
+                if (mobileFpsEl) mobileFpsEl.textContent = `${fpsVal} FPS`;
+                _frameCount = 0;
+                _lastFpsTime = now;
             }
         }
     </script>
