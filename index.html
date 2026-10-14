@@ -44,19 +44,29 @@
         }
         #loading-text {
             font-size: clamp(20px, 4vw, 28px); font-weight: 800;
-            margin-bottom: 25px; letter-spacing: 4px; color: #fff;
+            margin-bottom: 12px; letter-spacing: 4px; color: #fff;
             text-shadow: 0 0 15px rgba(0, 212, 255, 0.8);
+        }
+        #loading-subtext {
+            font-size: 12px; color: #94a3b8; margin-bottom: 18px;
+            letter-spacing: 1px; min-height: 18px;
         }
         #loading-bar-bg {
             width: 400px; max-width: 80%; height: 4px;
             background: rgba(255,255,255,0.08); border-radius: 2px;
-            overflow: hidden; margin-bottom: 40px;
+            overflow: hidden; margin-bottom: 24px;
             box-shadow: inset 0 1px 2px rgba(0,0,0,0.8);
         }
         #loading-bar-fill {
             width: 0%; height: 100%; background: #00d2ff;
             transition: width 0.15s ease-out;
             box-shadow: 0 0 15px #00d2ff, 0 0 5px #fff;
+        }
+        #loading-warnings {
+            max-width: 460px; font-size: 11px; color: #fbbf24;
+            margin-bottom: 20px; line-height: 1.4; display: none;
+            background: rgba(251, 191, 36, 0.1); border: 1px solid rgba(251, 191, 36, 0.35);
+            padding: 8px 14px; border-radius: 6px;
         }
         #start-btn { 
             display: none; padding: 18px 50px;
@@ -324,19 +334,21 @@
         <div id="crosshair"></div>
         <div id="loading">
             <div id="loading-text">LOADING 0%</div>
+            <div id="loading-subtext">Initializing engine &amp; loading assets...</div>
             <div id="loading-bar-bg"><div id="loading-bar-fill"></div></div>
-            <div id="start-btn">PLAY</div>
+            <div id="loading-warnings"></div>
+            <div id="start-btn" role="button" aria-label="Play Game">PLAY</div>
         </div>
         
         <!-- EMOTE WHEEL UI -->
-        <div id="emote-wheel">
-            <div id="emote-close-btn">X</div>
-            <div class="emote-btn-item" style="transform: rotate(-90deg) translate(90px) rotate(90deg);" data-emote="d1">D1</div>
-            <div class="emote-btn-item" style="transform: rotate(-30deg) translate(90px) rotate(30deg);" data-emote="d2">D2</div>
-            <div class="emote-btn-item" style="transform: rotate(30deg) translate(90px) rotate(-30deg);" data-emote="d3">D3</div>
-            <div class="emote-btn-item" style="transform: rotate(90deg) translate(90px) rotate(-90deg);" data-emote="d4">D4</div>
-            <div class="emote-btn-item" style="transform: rotate(150deg) translate(90px) rotate(-150deg);" data-emote="d5">D5</div>
-            <div class="emote-btn-item" style="transform: rotate(210deg) translate(90px) rotate(-210deg);" data-emote="d6">D6</div>
+        <div id="emote-wheel" role="dialog" aria-label="Emote Selection Wheel">
+            <div id="emote-close-btn" role="button" aria-label="Close Emote Wheel">X</div>
+            <div class="emote-btn-item" style="transform: rotate(-90deg) translate(90px) rotate(90deg);" data-emote="d1" role="button" aria-label="Emote D1">D1</div>
+            <div class="emote-btn-item" style="transform: rotate(-30deg) translate(90px) rotate(30deg);" data-emote="d2" role="button" aria-label="Emote D2">D2</div>
+            <div class="emote-btn-item" style="transform: rotate(30deg) translate(90px) rotate(-30deg);" data-emote="d3" role="button" aria-label="Emote D3">D3</div>
+            <div class="emote-btn-item" style="transform: rotate(90deg) translate(90px) rotate(-90deg);" data-emote="d4" role="button" aria-label="Emote D4">D4</div>
+            <div class="emote-btn-item" style="transform: rotate(150deg) translate(90px) rotate(-150deg);" data-emote="d5" role="button" aria-label="Emote D5">D5</div>
+            <div class="emote-btn-item" style="transform: rotate(210deg) translate(90px) rotate(-210deg);" data-emote="d6" role="button" aria-label="Emote D6">D6</div>
         </div>
 
         <div id="interact-hint"></div>
@@ -347,17 +359,17 @@
 
     <div id="mobile-controls">
         <div id="touch-look-zone"></div>
-        <div id="joy-zone"><div id="joy-knob"></div></div>
+        <div id="joy-zone" aria-label="Movement Joystick"><div id="joy-knob"></div></div>
         
-        <div id="btn-jump" class="touch-btn">JUMP</div>
-        <div id="btn-switch-char" class="touch-btn">SWITCH<br>CHAR</div>
-        <div id="btn-sprint" class="touch-btn">SPRINT</div>
-        <div id="btn-emote-mobile" class="touch-btn">EMOTE</div>
-        <div id="btn-cam-swap" class="touch-btn">CAM</div>
-        <div id="btn-gfx-mobile" class="touch-btn">GFX</div>
-        <div id="btn-cine-mobile" class="touch-btn">CINE</div>
-        <div id="btn-interact" class="touch-btn">F</div>
-        <div id="btn-horn" class="touch-btn">HORN</div>
+        <div id="btn-jump" class="touch-btn" role="button" aria-label="Jump or Brake">JUMP</div>
+        <div id="btn-switch-char" class="touch-btn" role="button" aria-label="Switch Character">SWITCH<br>CHAR</div>
+        <div id="btn-sprint" class="touch-btn" role="button" aria-label="Toggle Sprint">SPRINT</div>
+        <div id="btn-emote-mobile" class="touch-btn" role="button" aria-label="Open Emote Wheel">EMOTE</div>
+        <div id="btn-cam-swap" class="touch-btn" role="button" aria-label="Switch Camera View">CAM</div>
+        <div id="btn-gfx-mobile" class="touch-btn" role="button" aria-label="Graphics Settings">GFX</div>
+        <div id="btn-cine-mobile" class="touch-btn" role="button" aria-label="Toggle Cinematic Camera">CINE</div>
+        <div id="btn-interact" class="touch-btn" role="button" aria-label="Enter or Exit Vehicle">F</div>
+        <div id="btn-horn" class="touch-btn" role="button" aria-label="Sound Vehicle Horn">HORN</div>
     </div>
 
     <!-- Mobile Graphics & Optimization Popup -->
@@ -438,10 +450,11 @@
             document.body.classList.add('touch-active');
         }
 
-        // Hardware heuristic for sensible default graphics preset
         function detectInitialPreset() {
-            const saved = localStorage.getItem('game_graphics_preset');
-            if (saved && ['LOW', 'MEDIUM', 'HIGH'].includes(saved)) return saved;
+            try {
+                const saved = localStorage.getItem('game_graphics_preset');
+                if (saved && ['LOW', 'MEDIUM', 'HIGH'].includes(saved)) return saved;
+            } catch (e) {}
             const cores = navigator.hardwareConcurrency || 4;
             const memory = navigator.deviceMemory || 4;
             if (isMobile) {
@@ -450,7 +463,6 @@
             return (cores <= 4 || memory <= 4) ? 'MEDIUM' : 'HIGH';
         }
 
-        // Functional Graphics Quality Presets
         const GRAPHICS_PRESETS = {
             LOW: {
                 name: 'LOW',
@@ -458,7 +470,7 @@
                 shadows: false,
                 shadowMapSize: 1024,
                 shadowFrustum: 45,
-                shadowUpdateInterval: 3, // Update shadow map every N frames when enabled
+                shadowUpdateInterval: 3,
                 postProcessing: false,
                 bloomStrength: 0.0,
                 anisotropyCap: 2,
@@ -502,7 +514,6 @@
             }
         };
 
-        // Subtle Cinematic Color Grading & Crispness Shader Pass
         const CinematicGradeShader = {
             uniforms: {
                 tDiffuse: { value: null },
@@ -526,12 +537,9 @@
                 void main() {
                     vec4 texel = texture2D(tDiffuse, vUv);
                     vec3 col = texel.rgb;
-                    // Balanced S-curve contrast around mid-grey
                     col = clamp((col - 0.5) * contrast + 0.5, 0.0, 1.0);
-                    // Natural saturation boost without clipping skin/sky tones
                     float luma = dot(col, vec3(0.2126, 0.7152, 0.0722));
                     col = mix(vec3(luma), col, saturation);
-                    // Subtle optical vignette
                     vec2 uv = vUv * (1.0 - vUv.yx);
                     float vig = clamp(pow(max(uv.x * uv.y * 15.0, 0.0001), vignette), 0.0, 1.0);
                     col *= mix(0.86, 1.0, vig);
@@ -542,7 +550,7 @@
 
         const CONFIG = {
             walkSpeed: 2.0, runSpeed: 6.5, gravity: -9.8 * 2.5, jumpForce: 8.0, 
-            rotSpeed: 8.0, camSmoothness: 0.1
+            rotSpeed: 8.0, camSmoothness: 0.1, outOfBoundsY: -150.0
         };
 
         const CAR_CONFIG = {
@@ -607,7 +615,12 @@
         let switchControlPoint = new THREE.Vector3();
 
         let isGameReady = false;
+        let isStartingGame = false;
         let isTabPaused = false;
+        let managerFinished = false;
+        let asyncAssetsFinished = false;
+        let loadingWarningsList = [];
+
         let currentPresetName = detectInitialPreset();
         let performanceMode = (currentPresetName === 'LOW');
         let shadowsEnabled = GRAPHICS_PRESETS[currentPresetName].shadows;
@@ -618,7 +631,8 @@
         let shadowFrameCounter = 0;
 
         // Adaptive Performance State
-        let adaptivePerfEnabled = localStorage.getItem('game_adaptive_perf') !== 'false';
+        let adaptivePerfEnabled = true;
+        try { adaptivePerfEnabled = localStorage.getItem('game_adaptive_perf') !== 'false'; } catch (e) {}
         let dynamicResScale = 1.0;
         let rollingFps = 60.0;
         let lastAdaptiveAdjustTime = 0;
@@ -628,14 +642,15 @@
         let trackedMaterials = [];
         let trackedTextures = [];
         
-        let downRay = new THREE.Raycaster(); downRay.far = 4.0; downRay.firstHitOnly = true; 
-        let forwardRay = new THREE.Raycaster(); forwardRay.far = 1.5; forwardRay.firstHitOnly = true; 
-        let carRay = new THREE.Raycaster(); carRay.far = 3.0; carRay.firstHitOnly = true;
+        let downRay = new THREE.Raycaster(); downRay.far = 25.0; downRay.firstHitOnly = true; 
+        let forwardRay = new THREE.Raycaster(); forwardRay.far = 2.0; forwardRay.firstHitOnly = true; 
+        let carRay = new THREE.Raycaster(); carRay.far = 3.5; carRay.firstHitOnly = true;
+        let camRay = new THREE.Raycaster(); camRay.far = 20.0; camRay.firstHitOnly = true;
 
         const keys = { w: false, a: false, s: false, d: false, shift: false, space: false, q: false, e: false, f: false };
-        const camState = { angleX: 0, angleY: Math.PI / 8, curDist: 3.0, curHeight: 1.9 };
+        const camState = { angleX: 0, angleY: Math.PI / 8, curDist: 2.2, curHeight: 1.7 };
 
-        const joystick = { active: false, x: 0, y: 0, id: null };
+        const joystick = { active: false, x: 0, y: 0, id: null, deadzone: 0.12 };
         const touchLook = { id: null, lastX: 0, lastY: 0 };
         let mobileSprintToggle = false;
 
@@ -646,10 +661,11 @@
 
         let axisGroup = null, axisX = null, axisY = null, axisZ = null;
         let showGlobalAxis = false;
-        let fpsCounterEl = null, mobileFpsEl = null, resScaleEl = null;
+        let fpsCounterEl = null, mobileFpsEl = null, resScaleEl = null, posDisplayEl = null;
         let _frameCount = 0, _lastFpsTime = performance.now();
         let _lastDOMUpdate = 0; 
 
+        // Pre-allocated vectors to avoid per-frame garbage collection
         const _vDir = new THREE.Vector3();
         const _vHit = new THREE.Vector3();
         const _vTarget = new THREE.Vector3();
@@ -660,6 +676,10 @@
         const _vTemp1 = new THREE.Vector3();
         const _vTemp2 = new THREE.Vector3();
         const _vTemp3 = new THREE.Vector3();
+        const _vSlide = new THREE.Vector3();
+        const _vWallNormal = new THREE.Vector3();
+        const _vCamPivot = new THREE.Vector3();
+        const _vCamRayDir = new THREE.Vector3();
         const _vMidPoint = new THREE.Vector3();
         const _vSunOffset = new THREE.Vector3(75, 150, 75);
 
@@ -683,7 +703,7 @@
             renderer.setSize(window.innerWidth, window.innerHeight);
             renderer.shadowMap.enabled = initialPreset.shadows; 
             renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-            renderer.shadowMap.autoUpdate = false; // Controlled manually for stability & performance
+            renderer.shadowMap.autoUpdate = false;
             renderer.outputColorSpace = THREE.SRGBColorSpace;
             renderer.toneMapping = THREE.ACESFilmicToneMapping;
             renderer.toneMappingExposure = initialPreset.exposure;
@@ -700,7 +720,6 @@
             camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, initialPreset.cameraFar);
             scene.add(camera);
 
-            // Balanced natural ambient & hemisphere lighting
             ambientLight = new THREE.AmbientLight(0xf4f8ff, 0.72); 
             scene.add(ambientLight);
 
@@ -712,7 +731,6 @@
             cameraFillLight.position.set(0, 0.4, 0); 
             camera.add(cameraFillLight);
 
-            // Stabilized directional sun light that tracks the active player/car
             sunLight = new THREE.DirectionalLight(0xfff4e0, 3.2);
             sunTarget = new THREE.Object3D();
             sunTarget.position.copy(SPAWN_POINTS.player1);
@@ -743,13 +761,17 @@
                     if (GRAPHICS_PRESETS[currentPresetName].useHdrBackground) {
                         scene.background = envMapTexture;
                     }
-                } catch (e) {}
+                } catch (e) {
+                    console.warn("HDRI environment processing warning:", e);
+                }
                 hdrTexture.dispose();
                 if (pmremGenerator) {
                     pmremGenerator.dispose();
                     pmremGenerator = null;
                 }
-            }, undefined, function(err) {});
+            }, undefined, function() {
+                recordLoadingWarning("Optional environment lighting (hdri.hdr) unavailable; using sky lighting.");
+            });
 
             createAxisHelpers(5);
 
@@ -768,7 +790,9 @@
                         child.updateMatrix();
                         child.frustumCulled = true;
 
-                        if (child.geometry) child.geometry.computeBoundsTree();
+                        if (child.geometry && typeof child.geometry.computeBoundsTree === 'function') {
+                            child.geometry.computeBoundsTree();
+                        }
 
                         collidableMeshList.push(child);
                         terrainMeshList.push(child);
@@ -780,6 +804,9 @@
                 });
                 scene.add(map);
                 renderer.shadowMap.needsUpdate = true;
+            }, undefined, (err) => {
+                console.error("Failed to load map.glb:", err);
+                recordLoadingWarning("Map asset (map.glb) could not be loaded.");
             });
 
             setupPostProcessing();
@@ -790,6 +817,7 @@
             fpsCounterEl = document.getElementById('fps-counter');
             mobileFpsEl = document.getElementById('mobile-fps-readout');
             resScaleEl = document.getElementById('res-scale-display');
+            posDisplayEl = document.getElementById('pos-display');
             bindAxisUI();
             applyGraphicsPreset(currentPresetName, false);
         }
@@ -802,10 +830,9 @@
                 const preset = GRAPHICS_PRESETS[currentPresetName];
                 if (isEnvironment) {
                     if (mat.metalness === undefined) mat.metalness = 0.08;
-                    if (mat.roughness === undefined || mat.roughness === 1) mat.roughness = 0.55;
-                    mat.side = THREE.FrontSide;
+                    if (mat.roughness === undefined) mat.roughness = 0.55;
                 } else {
-                    if (mat.shininess !== undefined) mat.shininess = Math.max(mat.shininess, 35);
+                    if (mat.shininess !== undefined) mat.shininess = Math.max(mat.shininess, 30);
                 }
 
                 mat.envMapIntensity = preset.envMapIntensity;
@@ -836,40 +863,86 @@
             else processSingleMat(matOrArray);
         }
 
+        function recordLoadingWarning(msg) {
+            console.warn("[Asset Loader]", msg);
+            if (!loadingWarningsList.includes(msg)) {
+                loadingWarningsList.push(msg);
+                const warnEl = document.getElementById('loading-warnings');
+                if (warnEl) {
+                    warnEl.style.display = 'block';
+                    warnEl.innerText = loadingWarningsList.join(' | ');
+                }
+            }
+        }
+
+        function updateLoadingStatusText(subtext) {
+            const subEl = document.getElementById('loading-subtext');
+            if (subEl && subtext) subEl.innerText = subtext;
+        }
+
+        function checkAllAssetsReady() {
+            if (!managerFinished || !asyncAssetsFinished) return;
+
+            try {
+                renderer.compile(scene, camera);
+                renderer.shadowMap.needsUpdate = true;
+            } catch (e) {
+                console.warn("Shader pre-compile warning:", e);
+            }
+
+            const textEl = document.getElementById('loading-text');
+            const barEl = document.getElementById('loading-bar-fill');
+            if (textEl) textEl.innerText = "READY TO PLAY";
+            if (barEl) barEl.style.width = "100%";
+            updateLoadingStatusText(
+                characters.length > 0
+                    ? "All required game systems initialized."
+                    : "Initialized with asset warnings. Check console for details."
+            );
+
+            const startBtn = document.getElementById('start-btn');
+            if (startBtn) {
+                startBtn.style.display = 'block';
+                startBtn.onclick = () => {
+                    if (isStartingGame || isGameReady) return;
+                    isStartingGame = true;
+                    const overlay = document.getElementById('loading');
+                    if (overlay) overlay.style.opacity = '0';
+                    setTimeout(() => {
+                        if (overlay) overlay.style.display = 'none';
+                        isGameReady = true;
+                        clock.getDelta();
+                    }, 600);
+
+                    if (listener && listener.context && listener.context.state === 'suspended') {
+                        listener.context.resume().catch(() => {});
+                    }
+                };
+            }
+        }
+
         function setupLoadingManager() {
             loadingManager.onProgress = function(url, itemsLoaded, itemsTotal) {
-                const percent = Math.min(100, Math.floor((itemsLoaded / Math.max(1, itemsTotal)) * 100));
+                const rawRatio = itemsLoaded / Math.max(1, itemsTotal);
+                // Cap progress bar at 95% until async character/vehicle pipeline also completes
+                const cap = asyncAssetsFinished ? 100 : 95;
+                const percent = Math.min(cap, Math.floor(rawRatio * 100));
                 const textEl = document.getElementById('loading-text');
                 const barEl = document.getElementById('loading-bar-fill');
                 if (textEl) textEl.innerText = `LOADING ${percent}%`;
                 if (barEl) barEl.style.width = `${percent}%`;
+                const cleanName = url ? url.split('/').pop() : '';
+                if (cleanName) updateLoadingStatusText(`Loading ${cleanName}...`);
+            };
+
+            loadingManager.onError = function(url) {
+                const cleanName = url ? url.split('/').pop() : url;
+                console.warn(`Resource failed to load: ${cleanName}`);
             };
 
             loadingManager.onLoad = function() {
-                try {
-                    renderer.compile(scene, camera);
-                    renderer.shadowMap.needsUpdate = true;
-                } catch (e) {}
-
-                document.getElementById('loading-text').innerText = "READY TO PLAY";
-                document.getElementById('loading-bar-fill').style.width = `100%`;
-                
-                const startBtn = document.getElementById('start-btn');
-                startBtn.style.display = 'block';
-                
-                startBtn.onclick = () => {
-                    const overlay = document.getElementById('loading');
-                    overlay.style.opacity = '0';
-                    setTimeout(() => {
-                        overlay.style.display = 'none';
-                        isGameReady = true;
-                        clock.getDelta(); // Reset accumulated delta
-                    }, 600);
-                    
-                    if (listener && listener.context && listener.context.state === 'suspended') {
-                        listener.context.resume();
-                    }
-                };
+                managerFinished = true;
+                checkAllAssetsReady();
             };
         }
 
@@ -878,42 +951,77 @@
             const gltfLoader = new GLTFLoader(loadingManager);
 
             try {
+                updateLoadingStatusText("Loading character animations...");
                 const baseAnimPromises = [
-                    loader.loadAsync('idle.fbx').catch(() => null), 
-                    loader.loadAsync('walk.fbx').catch(() => null),
-                    loader.loadAsync('run.fbx').catch(() => null), 
-                    loader.loadAsync('jump.fbx').catch(() => null),
-                    loader.loadAsync('fall.fbx').catch(() => null),
+                    loader.loadAsync('idle.fbx').catch(() => { recordLoadingWarning("Missing idle.fbx"); return null; }), 
+                    loader.loadAsync('walk.fbx').catch(() => { recordLoadingWarning("Missing walk.fbx"); return null; }),
+                    loader.loadAsync('run.fbx').catch(() => { recordLoadingWarning("Missing run.fbx"); return null; }), 
+                    loader.loadAsync('jump.fbx').catch(() => { recordLoadingWarning("Missing jump.fbx"); return null; }),
+                    loader.loadAsync('fall.fbx').catch(() => { recordLoadingWarning("Missing fall.fbx"); return null; }),
                     loader.loadAsync('driver.fbx').catch(() => null),
                     loader.loadAsync('passenger.fbx').catch(() => null)
                 ];
 
                 const emotePromises = EMOTE_NAMES.map(name => 
-                    loader.loadAsync(`${name}.fbx`).catch(e => {
-                        console.warn(`Emote ${name}.fbx failed to load.`);
+                    loader.loadAsync(`${name}.fbx`).catch(() => {
+                        console.warn(`Optional emote ${name}.fbx unavailable.`);
                         return null;
                     })
                 );
 
-                const baseAnims = await Promise.all(baseAnimPromises);
+                // Kick off character and car model loads in parallel with animations so LoadingManager tracks all items together
+                const char1Promise = loader.loadAsync('character.fbx').catch((err) => {
+                    console.error("Failed to load character.fbx:", err);
+                    recordLoadingWarning("character.fbx failed to load.");
+                    return null;
+                });
+
+                const char2Promise = loader.loadAsync('2ndcharacter.fbx').catch(async () => {
+                    console.warn("Could not load 2ndcharacter.fbx, using character.fbx fallback.");
+                    try {
+                        return await loader.loadAsync('character.fbx');
+                    } catch (e) {
+                        recordLoadingWarning("2ndcharacter.fbx failed to load.");
+                        return null;
+                    }
+                });
+
+                const carModelPromise = loader.loadAsync('car.fbx').catch(async () => {
+                    try {
+                        const carGltf = await gltfLoader.loadAsync('car.glb');
+                        return carGltf.scene;
+                    } catch (e2) {
+                        recordLoadingWarning("Vehicle asset (car.fbx) could not be loaded.");
+                        return null;
+                    }
+                });
+
+                const carAnimPromise = gltfLoader.loadAsync('caranimation.glb').catch(() => {
+                    console.warn("Optional caranimation.glb not found.");
+                    return null;
+                });
+
+                const [baseAnims, emoteAnims, char1Mesh, char2Mesh, loadedCarMesh, carAnimFile] = await Promise.all([
+                    Promise.all(baseAnimPromises),
+                    Promise.all(emotePromises),
+                    char1MeshPromiseWrapper(char1Promise),
+                    char1MeshPromiseWrapper(char2Promise),
+                    carModelPromise,
+                    carAnimPromise
+                ]);
+
+                function char1MeshPromiseWrapper(p) { return p; }
+
                 const [idleAnim, walkAnim, runAnim, jumpAnim, fallAnim, driverAnim, passengerAnim] = baseAnims;
                 
-                const emoteAnims = await Promise.all(emotePromises);
                 emoteAnims.forEach((fbx, i) => {
                     if (fbx && fbx.animations && fbx.animations.length > 0) {
                         emoteClips[EMOTE_NAMES[i]] = fbx.animations[0];
                     }
                 });
 
-                async function loadCharacterFile(file, name, spawnPosition) {
-                    let charMesh;
-                    try {
-                        charMesh = await loader.loadAsync(file);
-                    } catch(e) {
-                        console.warn(`Could not load ${file}, using fallback.`);
-                        charMesh = await loader.loadAsync('character.fbx');
-                    }
-                    
+                function setupCharacterInstance(charMesh, name, spawnPosition) {
+                    if (!charMesh) return;
                     charMesh.name = name;
                     charMesh.position.copy(spawnPosition);
 
@@ -934,15 +1042,24 @@
                     scene.add(charMesh);
 
                     const charMixer = new THREE.AnimationMixer(charMesh);
-                    
+                    const getClip = (fbxObj) => (fbxObj && fbxObj.animations && fbxObj.animations.length > 0) ? fbxObj.animations[0] : null;
+
+                    const idleClip = getClip(idleAnim);
+                    const walkClip = getClip(walkAnim);
+                    const runClip = getClip(runAnim);
+                    const jumpClip = getClip(jumpAnim);
+                    const fallClip = getClip(fallAnim);
+                    const driverClip = getClip(driverAnim) || idleClip;
+                    const passengerClip = getClip(passengerAnim) || idleClip;
+
                     const charActions = {
-                        'idle': idleAnim ? charMixer.clipAction(idleAnim.animations[0]) : null,
-                        'walk': walkAnim ? charMixer.clipAction(walkAnim.animations[0]) : null,
-                        'run': runAnim ? charMixer.clipAction(runAnim.animations[0]) : null,
-                        'jump': jumpAnim ? charMixer.clipAction(jumpAnim.animations[0]) : null,
-                        'fall': fallAnim ? charMixer.clipAction(fallAnim.animations[0]) : null,
-                        'driver': (driverAnim && driverAnim.animations.length > 0) ? charMixer.clipAction(driverAnim.animations[0]) : (idleAnim ? charMixer.clipAction(idleAnim.animations[0]) : null),
-                        'passenger': (passengerAnim && passengerAnim.animations.length > 0) ? charMixer.clipAction(passengerAnim.animations[0]) : (idleAnim ? charMixer.clipAction(idleAnim.animations[0]) : null)
+                        'idle': idleClip ? charMixer.clipAction(idleClip) : null,
+                        'walk': walkClip ? charMixer.clipAction(walkClip) : null,
+                        'run': runClip ? charMixer.clipAction(runClip) : null,
+                        'jump': jumpClip ? charMixer.clipAction(jumpClip) : null,
+                        'fall': fallClip ? charMixer.clipAction(fallClip) : null,
+                        'driver': driverClip ? charMixer.clipAction(driverClip) : null,
+                        'passenger': passengerClip ? charMixer.clipAction(passengerClip) : null
                     };
                     
                     EMOTE_NAMES.forEach(emoteName => {
@@ -964,82 +1081,84 @@
                         spawnPoint: spawnPosition.clone() 
                     };
 
-                    charMixer.addEventListener('finished', (e) => { if (e.action === charActions['jump']) charData.isJumping = false; });
+                    charMixer.addEventListener('finished', (e) => {
+                        if (e.action === charActions['jump']) charData.isJumping = false;
+                    });
                     if (charData.activeAction) charData.activeAction.play();
                     characters.push(charData);
                 }
 
-                await loadCharacterFile('character.fbx', 'Player1_Character', SPAWN_POINTS.player1);
-                await loadCharacterFile('2ndcharacter.fbx', 'Player2_Character', SPAWN_POINTS.player2);
+                setupCharacterInstance(char1Mesh, 'Player1_Character', SPAWN_POINTS.player1);
+                setupCharacterInstance(char2Mesh, 'Player2_Character', SPAWN_POINTS.player2);
 
-                try {
-                    carData.mesh = await loader.loadAsync('car.fbx');
-                } catch(e) {
-                    try {
-                        const carGltf = await gltfLoader.loadAsync('car.glb');
-                        carData.mesh = carGltf.scene;
-                    } catch(e2) {
-                        console.warn("Could not load car.fbx or car.glb. Using Placeholder.");
-                        const geo = new THREE.BoxGeometry(2, 1.2, 4.5);
-                        const mat = new THREE.MeshStandardMaterial({color: 0xcc2222, roughness: 0.3, metalness: 0.8});
-                        carData.mesh = new THREE.Mesh(geo, mat);
-                    }
-                }
-                
-                carData.mesh.scale.setScalar(CAR_CONFIG.scale);
-                carData.mesh.position.copy(CAR_CONFIG.spawnPos);
-                
-                carData.mesh.traverse(c => {
-                    if (c.isMesh) { 
-                        c.castShadow = shadowsEnabled; 
-                        c.receiveShadow = true; 
-                        c.frustumCulled = true;
-                        if (c.geometry) { c.geometry.computeBoundsTree(); }
-                        if (c.material) { enhanceMaterialQuality(c.material, false); }
-                        collidableMeshList.push(c); 
-                    }
-                });
-                scene.add(carData.mesh);
-                renderer.shadowMap.needsUpdate = true;
+                if (loadedCarMesh) {
+                    carData.mesh = loadedCarMesh;
+                    carData.mesh.scale.setScalar(CAR_CONFIG.scale);
+                    carData.mesh.position.copy(CAR_CONFIG.spawnPos);
+                    
+                    carData.mesh.traverse(c => {
+                        if (c.isMesh) { 
+                            c.castShadow = shadowsEnabled; 
+                            c.receiveShadow = true; 
+                            c.frustumCulled = true;
+                            if (c.geometry && typeof c.geometry.computeBoundsTree === 'function') {
+                                c.geometry.computeBoundsTree();
+                            }
+                            if (c.material) { enhanceMaterialQuality(c.material, false); }
+                            collidableMeshList.push(c); 
+                        }
+                    });
+                    scene.add(carData.mesh);
 
-                carData.mixer = new THREE.AnimationMixer(carData.mesh);
-                try {
-                    const carAnimFile = await gltfLoader.loadAsync('caranimation.glb');
-                    if (carAnimFile.animations.length > 0) {
+                    carData.mixer = new THREE.AnimationMixer(carData.mesh);
+                    if (carAnimFile && carAnimFile.animations && carAnimFile.animations.length > 0) {
                         carData.driveAction = carData.mixer.clipAction(carAnimFile.animations[0]);
                         carData.driveAction.play();
                         carData.driveAction.paused = true; 
                     }
-                } catch (e) {
-                    console.warn("No caranimation.glb found for the car's wheels.");
                 }
 
-            } catch (err) { console.error(err); }
+                renderer.shadowMap.needsUpdate = true;
+            } catch (err) {
+                console.error("Error during asset setup:", err);
+                recordLoadingWarning("An error occurred while initializing assets.");
+            } finally {
+                asyncAssetsFinished = true;
+                checkAllAssetsReady();
+            }
         }
 
         function toggleEmoteWheel() {
-            if (carData.active) return; // Prevent emotes while in car
+            if (carData.active || isSwitching) return;
             isEmoteWheelOpen = !isEmoteWheelOpen;
             const wheel = document.getElementById('emote-wheel');
-            wheel.style.display = isEmoteWheelOpen ? 'block' : 'none';
+            if (wheel) wheel.style.display = isEmoteWheelOpen ? 'block' : 'none';
             if (isEmoteWheelOpen) {
                 if (document.pointerLockElement) document.exitPointerLock();
             } else {
-                if (!isMobile && !isTouchDevice) document.body.requestPointerLock();
+                if (!isMobile && !isTouchDevice && document.body.requestPointerLock) {
+                    document.body.requestPointerLock();
+                }
             }
         }
 
         function startEmote(name) {
-            if (!emoteClips[name] || characters.length < 2) return;
+            if (!emoteClips[name] || characters.length === 0 || carData.active || isSwitching) return;
             
             isEmoteWheelOpen = false;
-            document.getElementById('emote-wheel').style.display = 'none';
+            const wheel = document.getElementById('emote-wheel');
+            if (wheel) wheel.style.display = 'none';
             const cineBtn = document.getElementById('btn-cine-mobile');
             if (cineBtn && (isMobile || isTouchDevice)) cineBtn.style.display = 'flex';
-            if (!isMobile && !isTouchDevice) document.body.requestPointerLock();
+            if (!isMobile && !isTouchDevice && document.body.requestPointerLock) {
+                document.body.requestPointerLock();
+            }
 
             isEmoting = true;
             cinematicAngle = 0;
+
+            if (sounds.walk && sounds.walk.isPlaying) sounds.walk.stop();
+            if (sounds.run && sounds.run.isPlaying) sounds.run.stop();
 
             if (currentEmoteSound && currentEmoteSound.isPlaying) {
                 currentEmoteSound.stop();
@@ -1064,12 +1183,13 @@
                 
                 c.velocity.set(0, 0, 0);
                 c.isFollowing = false;
+                c.isJumping = false;
                 
                 const sideOffset = (index - (characters.length - 1) / 2) * 1.6; 
                 _vTemp2.copy(_vTemp1).addScaledVector(_vRight, sideOffset);
 
                 _vTemp3.copy(_vTemp2);
-                _vTemp3.y += 2.0;
+                _vTemp3.y += 2.5;
                 downRay.set(_vTemp3, _vDown);
                 const hits = downRay.intersectObjects(terrainMeshList, false);
                 if (hits.length > 0) {
@@ -1122,36 +1242,42 @@
         }
 
         function setupPostProcessing() {
-            composer = new EffectComposer(renderer);
-            composer.addPass(new RenderPass(scene, camera));
-            
-            bloomPass = new UnrealBloomPass(
-                new THREE.Vector2(window.innerWidth, window.innerHeight),
-                0.2, // subtle realistic bloom strength
-                0.45,
-                0.86
-            );
-            composer.addPass(bloomPass);
+            try {
+                composer = new EffectComposer(renderer);
+                composer.addPass(new RenderPass(scene, camera));
+                
+                bloomPass = new UnrealBloomPass(
+                    new THREE.Vector2(window.innerWidth, window.innerHeight),
+                    0.2,
+                    0.45,
+                    0.86
+                );
+                composer.addPass(bloomPass);
 
-            gradePass = new ShaderPass(CinematicGradeShader);
-            composer.addPass(gradePass);
-            
-            composer.addPass(new OutputPass());
-            
-            fxaaPass = new ShaderPass(FXAAShader);
-            updatePostProcessingSize();
-            composer.addPass(fxaaPass);
+                gradePass = new ShaderPass(CinematicGradeShader);
+                composer.addPass(gradePass);
+                
+                composer.addPass(new OutputPass());
+                
+                fxaaPass = new ShaderPass(FXAAShader);
+                updatePostProcessingSize();
+                composer.addPass(fxaaPass);
+            } catch (e) {
+                console.warn("Post-processing setup fallback:", e);
+                composer = null;
+                composerEnabled = false;
+            }
         }
 
         function updatePostProcessingSize() {
             const pr = renderer.getPixelRatio();
-            const width = window.innerWidth;
-            const height = window.innerHeight;
+            const width = Math.max(1, window.innerWidth);
+            const height = Math.max(1, window.innerHeight);
             if (composer) {
                 composer.setPixelRatio(pr);
                 composer.setSize(width, height);
             }
-            if (fxaaPass) {
+            if (fxaaPass && fxaaPass.material && fxaaPass.material.uniforms['resolution']) {
                 fxaaPass.material.uniforms['resolution'].value.x = 1 / (width * pr);
                 fxaaPass.material.uniforms['resolution'].value.y = 1 / (height * pr);
             }
@@ -1168,13 +1294,11 @@
             performanceMode = (presetKey === 'LOW');
             dynamicResScale = 1.0;
 
-            // 1. Update Pixel Ratio & Resolution
             const targetPR = Math.min(window.devicePixelRatio || 1, preset.maxPixelRatio) * dynamicResScale;
             renderer.setPixelRatio(targetPR);
             renderer.setSize(window.innerWidth, window.innerHeight);
             renderer.toneMappingExposure = preset.exposure;
 
-            // 2. Update Anisotropy & Material EnvMap Intensity
             const hwMaxAniso = renderer.capabilities.getMaxAnisotropy();
             maxAnisotropy = Math.min(hwMaxAniso, preset.anisotropyCap);
             trackedTextures.forEach(tex => {
@@ -1190,7 +1314,6 @@
                 }
             });
 
-            // 3. Update Shadows & Shadow Map Resolution
             shadowsEnabled = preset.shadows;
             renderer.shadowMap.enabled = shadowsEnabled;
             renderer.shadowMap.type = (presetKey === 'LOW') ? THREE.PCFShadowMap : THREE.PCFSoftShadowMap;
@@ -1220,8 +1343,7 @@
             });
             renderer.shadowMap.needsUpdate = true;
 
-            // 4. Update Post-Processing & Fog/Background
-            composerEnabled = preset.postProcessing;
+            composerEnabled = preset.postProcessing && !!composer;
             if (bloomPass) bloomPass.strength = preset.bloomStrength;
             updatePostProcessingSize();
 
@@ -1296,30 +1418,27 @@
             const instantFps = 1.0 / realDt;
             rollingFps = rollingFps * 0.94 + instantFps * 0.06;
 
-            // Cooldown of 3.5 seconds between adjustments to prevent constant switching
             if (now - lastAdaptiveAdjustTime < 3500) return;
 
             const preset = GRAPHICS_PRESETS[currentPresetName];
 
             if (rollingFps < 28 && dynamicResScale > 0.68) {
-                // Step down internal pixel ratio smoothly when sustained FPS drops
                 dynamicResScale = Math.max(0.65, +(dynamicResScale - 0.12).toFixed(2));
                 const newPR = Math.max(0.65, Math.min(window.devicePixelRatio || 1, preset.maxPixelRatio) * dynamicResScale);
                 renderer.setPixelRatio(newPR);
                 renderer.setSize(window.innerWidth, window.innerHeight);
                 if (composerEnabled && dynamicResScale <= 0.78) {
-                    composerEnabled = false; // Shed post-processing cost if struggling
+                    composerEnabled = false;
                 }
                 updatePostProcessingSize();
                 updateSettingsUI();
                 lastAdaptiveAdjustTime = now;
             } else if (rollingFps > 54 && dynamicResScale < 1.0) {
-                // Gradually restore resolution when performance recovers
                 dynamicResScale = Math.min(1.0, +(dynamicResScale + 0.1).toFixed(2));
                 const newPR = Math.min(window.devicePixelRatio || 1, preset.maxPixelRatio) * dynamicResScale;
                 renderer.setPixelRatio(newPR);
                 renderer.setSize(window.innerWidth, window.innerHeight);
-                if (dynamicResScale >= 0.95 && preset.postProcessing) {
+                if (dynamicResScale >= 0.95 && preset.postProcessing && composer) {
                     composerEnabled = true;
                 }
                 updatePostProcessingSize();
@@ -1338,7 +1457,6 @@
             const focusObj = (carData.active && carData.mesh) ? carData.mesh : characters[activeCharIndex].mesh;
             if (!focusObj) return;
 
-            // Snap shadow focus to world texel grid increments to eliminate shadow edge shimmering
             const texelSize = (preset.shadowFrustum * 2) / preset.shadowMapSize;
             const snapGrid = texelSize * 2.0;
             const sx = Math.round(focusObj.position.x / snapGrid) * snapGrid;
@@ -1354,21 +1472,27 @@
         function setupAudio() {
             listener = new THREE.AudioListener();
             camera.add(listener);
-            const audioLoader = new THREE.AudioLoader(loadingManager);
-            const optionalAudioLoader = new THREE.AudioLoader(); 
+            // Use an untracked AudioLoader so missing optional/local MP3 files never block game startup
+            const audioLoader = new THREE.AudioLoader();
             
             function loadSound(name, file, loop = false, volume = 1.0) {
                 const sound = new THREE.Audio(listener);
                 audioLoader.load(file, buffer => { 
-                    sound.setBuffer(buffer); sound.setLoop(loop); sound.setVolume(volume); 
+                    sound.setBuffer(buffer);
+                    sound.setLoop(loop);
+                    sound.setVolume(volume); 
                     sounds[name] = sound; 
-                }, undefined, () => {});
+                }, undefined, () => {
+                    console.warn(`Audio file ${file} could not be loaded; continuing without ${name} sound.`);
+                });
             }
 
             function loadOptionalSound(name, file) {
                 const sound = new THREE.Audio(listener);
-                optionalAudioLoader.load(file, buffer => {
-                    sound.setBuffer(buffer); sound.setLoop(true); sound.setVolume(0.8);
+                audioLoader.load(file, buffer => {
+                    sound.setBuffer(buffer);
+                    sound.setLoop(true);
+                    sound.setVolume(0.8);
                     emoteSounds[name] = sound;
                 }, undefined, () => {});
             }
@@ -1466,34 +1590,69 @@
             updateSettingsUI();
         }
 
+        function findSafeCarExitPosition(sideSign) {
+            _vTemp1.set(2.5 * sideSign, 0, 0).applyQuaternion(carData.mesh.quaternion);
+            _vTemp2.copy(carData.mesh.position).add(_vTemp1);
+
+            // Check if exit offset is blocked by a wall
+            _vTemp3.copy(carData.mesh.position);
+            _vTemp3.y += 1.0;
+            _vDir.copy(_vTemp1).normalize();
+            forwardRay.set(_vTemp3, _vDir);
+            const wallHits = forwardRay.intersectObjects(terrainMeshList, false);
+            if (wallHits.length > 0 && wallHits[0].distance < 2.4) {
+                // Try opposite side or behind car if blocked
+                _vTemp1.set(-2.5 * sideSign, 0, -1.5).applyQuaternion(carData.mesh.quaternion);
+                _vTemp2.copy(carData.mesh.position).add(_vTemp1);
+            }
+
+            // Snap exit height to terrain
+            _vTemp3.copy(_vTemp2);
+            _vTemp3.y += 3.0;
+            downRay.set(_vTemp3, _vDown);
+            const groundHits = downRay.intersectObjects(terrainMeshList, false);
+            if (groundHits.length > 0) {
+                _vTemp2.y = groundHits[0].point.y;
+            } else {
+                _vTemp2.y = carData.mesh.position.y + 0.5;
+            }
+            return _vTemp2;
+        }
+
         function toggleCarInteraction() {
             if (!carData.mesh || isSwitching || characters.length === 0) return;
             
             if (isEmoting) cancelEmote(); 
+            if (isEmoteWheelOpen) toggleEmoteWheel();
             
             const activeChar = characters[activeCharIndex];
 
             if (carData.active) {
                 carData.active = false;
+                carData.speed = 0;
                 
                 if (carData.driveAction) carData.driveAction.paused = true;
                 
                 activeChar.inCar = false;
                 activeChar.mesh.visible = true;
+                activeChar.velocity.set(0, 0, 0);
+                activeChar.isJumping = false;
                 
-                _vTemp1.set(2.5, 0, 0).applyQuaternion(carData.mesh.quaternion);
-                activeChar.mesh.position.copy(carData.mesh.position).add(_vTemp1);
-                activeChar.mesh.position.y += 1.0; 
+                const driverExitPos = findSafeCarExitPosition(1);
+                activeChar.mesh.position.copy(driverExitPos);
                 activeChar.mesh.rotation.set(0, carData.mesh.rotation.y, 0);
+                fadeToAction(activeChar, 'idle', 0.2);
                 
                 characters.forEach((c, idx) => {
                     if (idx !== activeCharIndex && c.inCar) {
                         c.inCar = false;
                         c.mesh.visible = true;
-                        _vTemp2.set(-2.5, 0, 0).applyQuaternion(carData.mesh.quaternion);
-                        c.mesh.position.copy(carData.mesh.position).add(_vTemp2);
-                        c.mesh.position.y += 1.0;
+                        c.velocity.set(0, 0, 0);
+                        c.isJumping = false;
+                        const passExitPos = findSafeCarExitPosition(-1);
+                        c.mesh.position.copy(passExitPos);
                         c.mesh.rotation.set(0, carData.mesh.rotation.y, 0);
+                        fadeToAction(c, 'idle', 0.2);
                     }
                 });
 
@@ -1504,10 +1663,13 @@
                 if (dist < CAR_CONFIG.interactionDist) {
                     carData.active = true;
                     activeChar.inCar = true;
-                    activeChar.velocity.set(0,0,0);
+                    activeChar.velocity.set(0, 0, 0);
+                    activeChar.isJumping = false;
                     
                     mobileSprintToggle = false;
                     keys.shift = false;
+                    const btnSprint = document.getElementById('btn-sprint');
+                    if (btnSprint) btnSprint.classList.remove('active-toggle');
                     if (sounds.walk && sounds.walk.isPlaying) sounds.walk.stop();
                     if (sounds.run && sounds.run.isPlaying) sounds.run.stop();
                 }
@@ -1526,24 +1688,38 @@
             isSwitching = true;
             switchTime = 0;
             
-            if (sounds.switch) {
+            if (sounds.switch && sounds.switch.buffer) {
                 if (sounds.switch.isPlaying) sounds.switch.stop();
                 sounds.switch.play();
             }
             if (sounds.walk && sounds.walk.isPlaying) sounds.walk.stop();
             if (sounds.run && sounds.run.isPlaying) sounds.run.stop();
 
+            // Ensure outgoing character returns to idle cleanly
+            const prevChar = characters[activeCharIndex];
+            prevChar.isFollowing = false;
+            if (prevChar.onGround && !prevChar.isJumping) {
+                fadeToAction(prevChar, 'idle', 0.2);
+            }
+
             switchStartCamPos.copy(camera.position);
-            const sourceMesh = characters[activeCharIndex].mesh;
+            const sourceMesh = prevChar.mesh;
             switchStartLookAt.copy(sourceMesh.position);
             switchStartLookAt.y += (currentCamIndex === 1) ? 1.7 : 1.5;
 
             keys.w = keys.a = keys.s = keys.d = keys.shift = keys.space = false;
             joystick.active = false;
+            joystick.x = 0;
+            joystick.y = 0;
             mobileSprintToggle = false;
+            const btnSprint = document.getElementById('btn-sprint');
+            if (btnSprint) btnSprint.classList.remove('active-toggle');
 
             activeCharIndex = (activeCharIndex + 1) % characters.length;
-            const targetMesh = characters[activeCharIndex].mesh;
+            const targetChar = characters[activeCharIndex];
+            targetChar.isFollowing = false;
+            const targetMesh = targetChar.mesh;
+            targetMesh.visible = true;
 
             const offsetX = Math.sin(camState.angleX) * camState.curDist * Math.cos(camState.angleY);
             const offsetZ = Math.cos(camState.angleX) * camState.curDist * Math.cos(camState.angleY);
@@ -1558,10 +1734,23 @@
             switchControlPoint.y = Math.max(switchStartCamPos.y, switchTargetCamPos.y) + Math.max(60, dist * 0.4); 
         }
 
+        function resetInputState() {
+            keys.w = keys.a = keys.s = keys.d = keys.shift = keys.space = keys.q = keys.e = keys.f = false;
+            joystick.active = false;
+            joystick.id = null;
+            joystick.x = 0;
+            joystick.y = 0;
+            touchLook.id = null;
+            const joyKnob = document.getElementById('joy-knob');
+            if (joyKnob) joyKnob.style.transform = `translate(-50%, -50%)`;
+            if (sounds.walk && sounds.walk.isPlaying) sounds.walk.stop();
+            if (sounds.run && sounds.run.isPlaying) sounds.run.stop();
+        }
+
         function setupInputs() {
             const unlockAudio = () => {
                 if (listener && listener.context && listener.context.state === 'suspended') {
-                    listener.context.resume();
+                    listener.context.resume().catch(() => {});
                 }
             };
             document.addEventListener('click', unlockAudio);
@@ -1572,33 +1761,33 @@
                 }
             }, {passive: true});
 
-            // Safe pause/resume when browser tab loses focus
             document.addEventListener('visibilitychange', () => {
                 if (document.hidden) {
                     isTabPaused = true;
-                    keys.w = keys.a = keys.s = keys.d = keys.shift = keys.space = false;
-                    joystick.active = false;
+                    resetInputState();
                     if (listener && listener.context && listener.context.state === 'running') {
-                        listener.context.suspend();
+                        listener.context.suspend().catch(() => {});
                     }
                 } else {
                     isTabPaused = false;
                     clock.getDelta();
                     if (isGameReady && listener && listener.context && listener.context.state === 'suspended') {
-                        listener.context.resume();
+                        listener.context.resume().catch(() => {});
                     }
                 }
             });
 
-            window.addEventListener('blur', () => {
-                keys.w = keys.a = keys.s = keys.d = keys.shift = keys.space = false;
-                joystick.active = false;
-            });
+            window.addEventListener('blur', resetInputState);
 
             document.addEventListener('keydown', e => {
+                if (e.repeat && (e.code === 'KeyF' || e.code === 'KeyC' || e.code === 'KeyV' || e.code === 'KeyE' || e.code === 'KeyL' || e.code === 'KeyM')) {
+                    return;
+                }
                 const map = { KeyW:'w', KeyA:'a', KeyS:'s', KeyD:'d', ShiftLeft:'shift', ShiftRight:'shift', Space:'space', KeyQ:'q', KeyE:'e', KeyF:'f' };
                 if (map[e.code] !== undefined) keys[map[e.code]] = true;
                 
+                if (!isGameReady) return;
+
                 if (e.code === 'KeyF') toggleCarInteraction();
                 if (e.code === 'KeyC') triggerCharacterSwitch();
                 if (e.code === 'KeyM') toggleUI();
@@ -1610,8 +1799,7 @@
 
                 if (e.code === 'KeyE') {
                     if (carData.active) {
-                        if (sounds.car_horn && sounds.car_horn.buffer) {
-                            if (sounds.car_horn.isPlaying) sounds.car_horn.stop();
+                        if (sounds.car_horn && sounds.car_horn.buffer && !sounds.car_horn.isPlaying) {
                             sounds.car_horn.play();
                         }
                     } else {
@@ -1653,13 +1841,13 @@
 
             document.addEventListener('mousedown', (e) => {
                 if (e.pointerType === "touch" || window.innerWidth <= 900) return; 
-                if (isEmoteWheelOpen || e.target.closest('#axis-fps-global') || e.target.closest('#mobile-gfx-modal') || e.target.closest('#loading')) return;
+                if (!isGameReady || isEmoteWheelOpen || e.target.closest('#axis-fps-global') || e.target.closest('#mobile-gfx-modal') || e.target.closest('#loading')) return;
                 if (document.body.requestPointerLock) document.body.requestPointerLock();
             });
 
             document.querySelectorAll('.emote-btn-item').forEach(btn => {
-                btn.addEventListener('click', (e) => { startEmote(e.target.getAttribute('data-emote')); });
-                btn.addEventListener('touchstart', (e) => { e.preventDefault(); startEmote(e.target.getAttribute('data-emote')); }, {passive: false});
+                btn.addEventListener('click', (e) => { startEmote(e.currentTarget.getAttribute('data-emote')); });
+                btn.addEventListener('touchstart', (e) => { e.preventDefault(); startEmote(e.currentTarget.getAttribute('data-emote')); }, {passive: false});
             });
             document.getElementById('emote-close-btn').addEventListener('click', toggleEmoteWheel);
             document.getElementById('emote-close-btn').addEventListener('touchstart', (e) => { e.preventDefault(); toggleEmoteWheel(); }, {passive: false});
@@ -1729,13 +1917,27 @@
                 if (isSwitching) return;
                 const cx = joyRect.left + joyRect.width / 2;
                 const cy = joyRect.top + joyRect.height / 2;
-                let dx = x - cx; let dy = y - cy;
-                const maxR = joyRect.width / 2;
+                let dx = x - cx;
+                let dy = y - cy;
+                const maxR = Math.max(1, joyRect.width / 2);
                 const dist = Math.hypot(dx, dy);
-                if (dist > maxR) { dx = (dx / dist) * maxR; dy = (dy / dist) * maxR; }
+                if (dist > maxR) {
+                    dx = (dx / dist) * maxR;
+                    dy = (dy / dist) * maxR;
+                }
                 joyKnob.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
-                joystick.x = dx / maxR;
-                joystick.y = dy / maxR;
+
+                const normX = dx / maxR;
+                const normY = dy / maxR;
+                const mag = Math.hypot(normX, normY);
+                if (mag < joystick.deadzone) {
+                    joystick.x = 0;
+                    joystick.y = 0;
+                } else {
+                    const rescaled = (mag - joystick.deadzone) / (1.0 - joystick.deadzone);
+                    joystick.x = (normX / mag) * rescaled;
+                    joystick.y = (normY / mag) * rescaled;
+                }
             };
 
             joyZone.addEventListener('touchstart', e => {
@@ -1769,6 +1971,7 @@
             const btnJump = document.getElementById('btn-jump');
             btnJump.addEventListener('touchstart', e => { e.preventDefault(); if (!isSwitching && !isEmoting) keys.space = true; btnJump.classList.add('active-toggle'); }, {passive: false});
             btnJump.addEventListener('touchend', e => { e.preventDefault(); keys.space = false; btnJump.classList.remove('active-toggle'); }, {passive: false});
+            btnJump.addEventListener('touchcancel', e => { e.preventDefault(); keys.space = false; btnJump.classList.remove('active-toggle'); }, {passive: false});
 
             const btnSwitchChar = document.getElementById('btn-switch-char');
             btnSwitchChar.addEventListener('touchstart', e => { 
@@ -1805,8 +2008,7 @@
             const btnHorn = document.getElementById('btn-horn');
             btnHorn.addEventListener('touchstart', e => {
                 e.preventDefault();
-                if (carData.active && sounds.car_horn && sounds.car_horn.buffer) {
-                    if (sounds.car_horn.isPlaying) sounds.car_horn.stop();
+                if (carData.active && sounds.car_horn && sounds.car_horn.buffer && !sounds.car_horn.isPlaying) {
                     sounds.car_horn.play();
                 }
                 btnHorn.classList.add('active-toggle');
@@ -1828,9 +2030,11 @@
         }
 
         function fadeToAction(charData, name, duration) {
-            if (!charData.actions || !charData.actions[name] || charData.activeAction === charData.actions[name]) return;
+            if (!charData.actions) return;
+            const nextAction = charData.actions[name] || charData.actions['idle'];
+            if (!nextAction || charData.activeAction === nextAction) return;
             const prev = charData.activeAction;
-            charData.activeAction = charData.actions[name];
+            charData.activeAction = nextAction;
             if (prev) prev.fadeOut(duration);
             charData.activeAction.reset().fadeIn(duration).play();
         }
@@ -1850,7 +2054,7 @@
                 btnF.style.display = 'flex';
                 btnHorn.style.display = 'flex'; 
                 
-                btnJump.style.display = 'flex'; // Keep brake accessible on mobile
+                btnJump.style.display = 'flex';
                 btnJump.innerHTML = "BRAKE";
                 btnSwitch.style.display = 'none';
                 btnSprint.style.display = 'none';
@@ -1911,7 +2115,7 @@
                         sounds.car_accelerate.play();
                     }
                 } else if (engineState === 'accel') {
-                    if (sounds.car_accelerate && !sounds.car_accelerate.isPlaying) {
+                    if (!sounds.car_accelerate || !sounds.car_accelerate.isPlaying) {
                         engineState = 'move';
                     }
                 }
@@ -1951,6 +2155,33 @@
             }
         }
 
+        function isDescendantOf(obj, root) {
+            let cur = obj;
+            while (cur) {
+                if (cur === root) return true;
+                cur = cur.parent;
+            }
+            return false;
+        }
+
+        function checkVehicleObstacleBlocked(carMesh, moveDir) {
+            // Check center and left/right bumper rays to prevent corner clipping
+            _vRight.set(1, 0, 0).applyQuaternion(carMesh.quaternion);
+            const offsets = [0, -0.85, 0.85];
+            for (let k = 0; k < offsets.length; k++) {
+                _vTarget.copy(carMesh.position).addScaledVector(_vRight, offsets[k]);
+                _vTarget.y += 1.0;
+                carRay.set(_vTarget, moveDir);
+                const hits = carRay.intersectObjects(collidableMeshList, false);
+                for (let h = 0; h < hits.length; h++) {
+                    if (!isDescendantOf(hits[h].object, carMesh) && hits[h].distance < 2.5) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
         function updatePhysics(dt) {
             if (characters.length === 0) return;
 
@@ -1965,20 +2196,23 @@
                 if (keys.d) steerInput -= 1;
 
                 if (joystick.active) {
-                    throttle -= joystick.y; 
-                    steerInput -= joystick.x; 
+                    throttle = THREE.MathUtils.clamp(throttle - joystick.y, -1, 1);
+                    steerInput = THREE.MathUtils.clamp(steerInput - joystick.x, -1, 1);
                 }
 
+                const steerSmooth = 1.0 - Math.exp(-10.0 * dt);
+                carData.steerAngle = THREE.MathUtils.lerp(carData.steerAngle, steerInput, steerSmooth);
+
                 if (keys.space) {
-                    carData.speed = THREE.MathUtils.lerp(carData.speed, 0, dt * CAR_CONFIG.braking);
+                    carData.speed = THREE.MathUtils.lerp(carData.speed, 0, 1.0 - Math.exp(-CAR_CONFIG.braking * dt * 0.25));
                 } else if (throttle !== 0) {
                     carData.speed += throttle * CAR_CONFIG.acceleration * dt;
                     carData.speed = THREE.MathUtils.clamp(carData.speed, -CAR_CONFIG.maxSpeed * 0.4, CAR_CONFIG.maxSpeed);
                 } else {
-                    carData.speed = THREE.MathUtils.lerp(carData.speed, 0, dt * CAR_CONFIG.friction);
+                    carData.speed = THREE.MathUtils.lerp(carData.speed, 0, 1.0 - Math.exp(-CAR_CONFIG.friction * dt));
                 }
 
-                if (Math.abs(carData.speed) < 0.1) carData.speed = 0;
+                if (Math.abs(carData.speed) < 0.08) carData.speed = 0;
 
                 if (carData.mixer) {
                     carData.mixer.update(dt);
@@ -1992,10 +2226,10 @@
                     }
                 }
 
-                if (Math.abs(carData.speed) > 0) {
+                if (Math.abs(carData.speed) > 0.05) {
                     const direction = carData.speed > 0 ? 1 : -1;
-                    const steerFactor = Math.min(Math.abs(carData.speed) / 10.0, 1.0); 
-                    const steerAmount = steerInput * CAR_CONFIG.steerSpeed * dt * steerFactor * direction;
+                    const steerFactor = Math.min(Math.abs(carData.speed) / 8.0, 1.0); 
+                    const steerAmount = carData.steerAngle * CAR_CONFIG.steerSpeed * dt * steerFactor * direction;
                     carData.mesh.rotation.y += steerAmount;
                 }
 
@@ -2005,47 +2239,37 @@
 
                 let carBlocked = false;
                 if (Math.abs(carData.speed) > 0.01) {
-                    _vTarget.copy(carData.mesh.position);
-                    _vTarget.y += 1.0; 
-                    
-                    carRay.set(_vTarget, _vTemp1);
-                    const hits = carRay.intersectObjects(collidableMeshList, false); 
-                    
-                    const validHit = hits.find(hit => {
-                        let current = hit.object;
-                        while (current) {
-                            if (current === carData.mesh) return false;
-                            current = current.parent;
-                        }
-                        return true;
-                    });
-
-                    if (validHit && validHit.distance < 2.5) {
-                        carBlocked = true;
-                    }
+                    carBlocked = checkVehicleObstacleBlocked(carData.mesh, _vTemp1);
                 }
 
                 if (!carBlocked && Math.abs(carData.speed) > 0.001) {
                     carData.mesh.position.addScaledVector(_vDir, carData.speed * dt);
-                    _vTemp2.copy(carData.mesh.position);
-                    _vTemp2.y += 2.0;
-                    downRay.set(_vTemp2, _vDown);
-                    const hits = downRay.intersectObjects(terrainMeshList, false);
-                    if (hits.length > 0) {
-                        carData.mesh.position.y = hits[0].point.y;
-                    }
                 } else if (carBlocked) {
                     carData.speed = 0; 
                 }
+
+                _vTemp2.copy(carData.mesh.position);
+                _vTemp2.y += 3.0;
+                downRay.set(_vTemp2, _vDown);
+                const hits = downRay.intersectObjects(terrainMeshList, false);
+                if (hits.length > 0) {
+                    carData.mesh.position.y = THREE.MathUtils.lerp(
+                        carData.mesh.position.y,
+                        hits[0].point.y,
+                        1.0 - Math.exp(-18.0 * dt)
+                    );
+                } else if (carData.mesh.position.y < CONFIG.outOfBoundsY) {
+                    carData.mesh.position.copy(CAR_CONFIG.spawnPos);
+                    carData.speed = 0;
+                }
             }
             
-            // --- CHARACTER PHYSICS ---
             for (let i = 0; i < characters.length; i++) {
                 let charData = characters[i];
                 let charMesh = charData.mesh;
                 let isActive = (i === activeCharIndex);
 
-                if (charData.inCar) {
+                if (charData.inCar && carData.mesh) {
                     const isDriver = (i === activeCharIndex);
                     const localOffset = isDriver ? SEAT_POSITIONS.driver : SEAT_POSITIONS.passenger; 
                     _vTemp1.copy(localOffset).applyQuaternion(carData.mesh.quaternion);
@@ -2065,10 +2289,11 @@
                 }
 
                 let isRunning = false;
+                let speedMultiplier = 1.0;
                 
                 _vForward.set(-Math.sin(camState.angleX), 0, -Math.cos(camState.angleX));
                 _vRight.set(Math.cos(camState.angleX), 0, -Math.sin(camState.angleX));
-                _vDir.set(0,0,0);
+                _vDir.set(0, 0, 0);
 
                 if (isActive && !isSwitching && !carData.active && !isEmoting) {
                     isRunning = keys.shift || mobileSprintToggle;
@@ -2077,15 +2302,15 @@
                     if (keys.d) _vDir.add(_vRight); 
                     if (keys.a) _vDir.sub(_vRight);
 
-                    if (joystick.active) {
+                    if (joystick.active && (joystick.x !== 0 || joystick.y !== 0)) {
                         _vDir.addScaledVector(_vForward, -joystick.y);
                         _vDir.addScaledVector(_vRight, joystick.x);
                     }
                 } else if (!isActive && !isEmoting) {
-                    let targetMesh = carData.active ? carData.mesh : characters[activeCharIndex].mesh;
+                    let targetMesh = (carData.active && carData.mesh) ? carData.mesh : characters[activeCharIndex].mesh;
                     let dist = charMesh.position.distanceTo(targetMesh.position);
 
-                    if (carData.active) {
+                    if (carData.active && carData.mesh) {
                         if (dist > 3.0) {
                             charData.isFollowing = true;
                         } else {
@@ -2094,31 +2319,69 @@
                             continue;
                         }
                     } else {
-                        if (dist > 3.5) charData.isFollowing = true;
-                        if (dist < 2.0) charData.isFollowing = false;
+                        if (dist > 3.8) charData.isFollowing = true;
+                        else if (dist < 2.2) charData.isFollowing = false;
                     }
 
                     if (charData.isFollowing) {
                         _vTarget.subVectors(targetMesh.position, charMesh.position);
-                        _vTarget.y = 0; 
-                        _vTarget.normalize();
-                        _vDir.copy(_vTarget);
-                        isRunning = dist > 6.0; 
+                        _vTarget.y = 0;
+                        const horizDist = _vTarget.length();
+                        if (horizDist > 0.001) {
+                            _vTarget.divideScalar(horizDist);
+                            _vDir.copy(_vTarget);
+
+                            // Companion whisker obstacle avoidance around walls or parked car
+                            _vTemp1.copy(charMesh.position); _vTemp1.y += 1.0;
+                            forwardRay.set(_vTemp1, _vDir);
+                            const blockHits = forwardRay.intersectObjects(collidableMeshList, false);
+                            if (blockHits.length > 0 && blockHits[0].distance < 1.1) {
+                                _vTemp2.copy(_vDir).applyAxisAngle(_vUp, Math.PI / 4);
+                                forwardRay.set(_vTemp1, _vTemp2);
+                                const leftHits = forwardRay.intersectObjects(collidableMeshList, false);
+                                if (leftHits.length === 0 || leftHits[0].distance > 1.2) {
+                                    _vDir.copy(_vTemp2);
+                                } else {
+                                    _vDir.applyAxisAngle(_vUp, -Math.PI / 4);
+                                }
+                            }
+                        }
+                        isRunning = dist > 6.0;
+                        speedMultiplier = THREE.MathUtils.clamp((dist - 2.0) / 1.8, 0.4, 1.0);
                     }
                 }
 
-                const speed = isRunning ? CONFIG.runSpeed : CONFIG.walkSpeed;
-                const isMoving = _vDir.lengthSq() > 0.01;
+                // Gentle character-to-character separation so characters never occupy the exact same coordinate
+                if (!carData.active && !isEmoting && characters.length > 1) {
+                    const otherIdx = (i === 0) ? 1 : 0;
+                    const otherChar = characters[otherIdx];
+                    if (otherChar && !otherChar.inCar) {
+                        const sepX = charMesh.position.x - otherChar.mesh.position.x;
+                        const sepZ = charMesh.position.z - otherChar.mesh.position.z;
+                        const sepDistSq = sepX * sepX + sepZ * sepZ;
+                        const minSep = 0.85;
+                        if (sepDistSq < minSep * minSep && sepDistSq > 0.00001) {
+                            const sepDist = Math.sqrt(sepDistSq);
+                            const push = (minSep - sepDist) * 2.5 * dt;
+                            charMesh.position.x += (sepX / sepDist) * push;
+                            charMesh.position.z += (sepZ / sepDist) * push;
+                        }
+                    }
+                }
+
+                const speed = (isRunning ? CONFIG.runSpeed : CONFIG.walkSpeed) * speedMultiplier;
+                const inputLenSq = _vDir.lengthSq();
+                const isMoving = inputLenSq > 0.005;
 
                 if (isActive && !isSwitching && !isEmoting) {
                     if (charData.onGround && !charData.isJumping) {
                         if (isMoving) {
                             if (isRunning) {
                                 if (sounds.walk && sounds.walk.isPlaying) sounds.walk.stop();
-                                if (sounds.run && !sounds.run.isPlaying) sounds.run.play();
+                                if (sounds.run && sounds.run.buffer && !sounds.run.isPlaying) sounds.run.play();
                             } else {
                                 if (sounds.run && sounds.run.isPlaying) sounds.run.stop();
-                                if (sounds.walk && !sounds.walk.isPlaying) sounds.walk.play();
+                                if (sounds.walk && sounds.walk.buffer && !sounds.walk.isPlaying) sounds.walk.play();
                             }
                         } else {
                             if (sounds.walk && sounds.walk.isPlaying) sounds.walk.stop();
@@ -2130,41 +2393,82 @@
                     }
                 }
 
-                let isBlocked = false;
                 if (isMoving) {
-                    const length = _vDir.length();
-                    _vDir.normalize();
-                    
-                    _vTemp1.copy(charMesh.position); _vTemp1.y += 1.0;
+                    const length = Math.sqrt(inputLenSq);
+                    _vDir.divideScalar(length);
+                    const appliedLength = (isActive && !isSwitching) ? Math.min(length, 1.0) : 1.0;
+
+                    _vTemp1.copy(charMesh.position);
+                    _vTemp1.y += 1.0;
                     forwardRay.set(_vTemp1, _vDir);
                     const hits = forwardRay.intersectObjects(collidableMeshList, false);
-                    if (hits.length > 0 && hits[0].distance < 0.5) isBlocked = true;
+
+                    let canAdvance = true;
+                    let moveVec = _vDir;
+
+                    if (hits.length > 0 && hits[0].distance < 0.55) {
+                        // Attempt smooth wall sliding along the obstacle surface tangent
+                        if (hits[0].face) {
+                            _vWallNormal.copy(hits[0].face.normal).transformDirection(hits[0].object.matrixWorld);
+                            _vWallNormal.y = 0;
+                            if (_vWallNormal.lengthSq() > 0.001) {
+                                _vWallNormal.normalize();
+                                _vSlide.copy(_vDir).addScaledVector(_vWallNormal, -_vDir.dot(_vWallNormal));
+                                if (_vSlide.lengthSq() > 0.04) {
+                                    _vSlide.normalize();
+                                    forwardRay.set(_vTemp1, _vSlide);
+                                    const slideHits = forwardRay.intersectObjects(collidableMeshList, false);
+                                    if (slideHits.length === 0 || slideHits[0].distance >= 0.55) {
+                                        moveVec = _vSlide;
+                                    } else {
+                                        canAdvance = false;
+                                    }
+                                } else {
+                                    canAdvance = false;
+                                }
+                            } else {
+                                canAdvance = false;
+                            }
+                        } else {
+                            canAdvance = false;
+                        }
+                    }
                     
-                    if (!isBlocked) {
-                        const appliedLength = (isActive && !isSwitching) ? Math.min(length, 1.0) : 1.0;
-                        charMesh.position.addScaledVector(_vDir, speed * appliedLength * dt);
+                    if (canAdvance) {
+                        charMesh.position.addScaledVector(moveVec, speed * appliedLength * dt);
                         
                         const targetRot = Math.atan2(_vDir.x, _vDir.z);
                         let rotDiff = targetRot - charMesh.rotation.y;
                         while (rotDiff > Math.PI) rotDiff -= Math.PI * 2;
                         while (rotDiff < -Math.PI) rotDiff += Math.PI * 2;
-                        charMesh.rotation.y += rotDiff * CONFIG.rotSpeed * dt;
+                        const turnFactor = 1.0 - Math.exp(-CONFIG.rotSpeed * dt);
+                        charMesh.rotation.y += rotDiff * turnFactor;
                         
-                        if (!isEmoting && !charData.isJumping && charData.onGround) fadeToAction(charData, isRunning ? 'run' : 'walk', 0.2);
+                        if (!isEmoting && !charData.isJumping && charData.onGround) {
+                            fadeToAction(charData, isRunning ? 'run' : 'walk', 0.2);
+                        }
                     } else {
-                        if (!isEmoting && !charData.isJumping && charData.onGround) fadeToAction(charData, 'idle', 0.2);
+                        if (!isEmoting && !charData.isJumping && charData.onGround) {
+                            fadeToAction(charData, 'idle', 0.2);
+                        }
                     }
                 } else {
-                    if (!isEmoting && !charData.isJumping && charData.onGround) fadeToAction(charData, 'idle', 0.2);
+                    if (!isEmoting && !charData.isJumping && charData.onGround) {
+                        fadeToAction(charData, 'idle', 0.2);
+                    }
                 }
 
                 if (isActive && !isSwitching && keys.space && charData.onGround && !charData.isJumping && !carData.active && !isEmoting) {
-                    charData.velocity.y = CONFIG.jumpForce; charData.onGround = false; charData.isJumping = true;
-                    if (sounds.jump) { if (sounds.jump.isPlaying) sounds.jump.stop(); sounds.jump.play(); }
+                    charData.velocity.y = CONFIG.jumpForce;
+                    charData.onGround = false;
+                    charData.isJumping = true;
+                    if (sounds.jump && sounds.jump.buffer) {
+                        if (sounds.jump.isPlaying) sounds.jump.stop();
+                        sounds.jump.play();
+                    }
                     fadeToAction(charData, 'jump', 0.1);
                 }
 
-                // Skip vertical raycast if character is completely stationary on the ground
                 if (!isMoving && charData.onGround && !charData.isJumping && charData.velocity.y === 0) {
                     continue;
                 }
@@ -2176,7 +2480,8 @@
                 charData.velocity.y += CONFIG.gravity * dt;
                 charMesh.position.y += charData.velocity.y * dt;
 
-                _vTemp2.copy(charMesh.position); _vTemp2.y += 2.0;
+                _vTemp2.copy(charMesh.position);
+                _vTemp2.y += 2.0;
                 downRay.set(_vTemp2, _vDown);
                 
                 const intersects = downRay.intersectObjects(collidableMeshList, false);
@@ -2184,73 +2489,106 @@
                     const hit = intersects[0];
                     const groundHeight = hit.point.y;
                     const distToFloor = hit.distance;
-                    if (distToFloor <= 2.2 && charData.velocity.y <= 0) {
-                        if (isActive && !charData.onGround && sounds.land) { 
-                            if (sounds.land.isPlaying) sounds.land.stop(); sounds.land.play(); 
+                    if (distToFloor <= 2.25 && charData.velocity.y <= 0) {
+                        if (isActive && !charData.onGround && sounds.land && sounds.land.buffer) { 
+                            if (sounds.land.isPlaying) sounds.land.stop();
+                            sounds.land.play(); 
                         }
                         charMesh.position.y = groundHeight;
                         charData.velocity.y = 0;
                         charData.onGround = true;
-                    } else if (distToFloor > 2.2) {
+                    } else if (distToFloor > 2.25) {
                         charData.onGround = false;
                     }
                 } else {
                     charData.onGround = false;
-                    if (charMesh.position.y < -50) {
-                        charMesh.position.copy(charData.spawnPoint);
-                        charData.velocity.y = 0;
-                    }
+                }
+
+                // Safe out-of-bounds respawn check well below the map's -53.93 spawn elevation
+                if (charMesh.position.y < CONFIG.outOfBoundsY) {
+                    charMesh.position.copy(charData.spawnPoint);
+                    charData.velocity.set(0, 0, 0);
+                    charData.onGround = false;
+                    charData.isJumping = false;
                 }
             }
         }
 
-        function updateGameCamera() {
+        function computeCollisionSafeCameraPosition(pivotPos, desiredCamPos) {
+            _vCamRayDir.subVectors(desiredCamPos, pivotPos);
+            const fullDist = _vCamRayDir.length();
+            if (fullDist < 0.25) return desiredCamPos;
+
+            _vCamRayDir.divideScalar(fullDist);
+            camRay.far = fullDist;
+            camRay.set(pivotPos, _vCamRayDir);
+            const hits = camRay.intersectObjects(terrainMeshList, false);
+            if (hits.length > 0 && hits[0].distance < fullDist) {
+                const safeDist = Math.max(0.35, hits[0].distance - 0.25);
+                desiredCamPos.copy(pivotPos).addScaledVector(_vCamRayDir, safeDist);
+            }
+            return desiredCamPos;
+        }
+
+        function updateGameCamera(dt) {
             if (characters.length === 0) return;
             const activeMesh = characters[activeCharIndex].mesh;
 
             const target = CAMERA_MODES[currentCamIndex];
-            camState.curDist = THREE.MathUtils.lerp(camState.curDist, target.dist, 0.1);
-            camState.curHeight = THREE.MathUtils.lerp(camState.curHeight, target.height, 0.1);
+            const camLerp = 1.0 - Math.exp(-10.0 * dt);
+            camState.curDist = THREE.MathUtils.lerp(camState.curDist, target.dist, camLerp);
+            camState.curHeight = THREE.MathUtils.lerp(camState.curHeight, target.height, camLerp);
             
-            if (camState.curDist < 0.2) activeMesh.visible = false; else activeMesh.visible = true;
+            if (camState.curDist < 0.25) activeMesh.visible = false;
+            else activeMesh.visible = true;
 
             const offsetX = Math.sin(camState.angleX) * camState.curDist * Math.cos(camState.angleY);
             const offsetZ = Math.cos(camState.angleX) * camState.curDist * Math.cos(camState.angleY);
             const offsetY = camState.curDist * Math.sin(camState.angleY);
             
-            _vTarget.set(activeMesh.position.x + offsetX, activeMesh.position.y + camState.curHeight + offsetY, activeMesh.position.z + offsetZ);
-            camera.position.copy(_vTarget);
-            
             const lookAtHeight = (currentCamIndex === 1) ? 1.7 : 1.5;
-            camera.lookAt(activeMesh.position.x, activeMesh.position.y + lookAtHeight, activeMesh.position.z);
+            _vCamPivot.set(activeMesh.position.x, activeMesh.position.y + lookAtHeight, activeMesh.position.z);
+            _vTarget.set(activeMesh.position.x + offsetX, activeMesh.position.y + camState.curHeight + offsetY, activeMesh.position.z + offsetZ);
+
+            if (camState.curDist >= 0.25) {
+                computeCollisionSafeCameraPosition(_vCamPivot, _vTarget);
+            }
+
+            camera.position.copy(_vTarget);
+            camera.lookAt(_vCamPivot);
         }
 
-        function updateCarCamera() {
+        function updateCarCamera(dt) {
             if (!carData.mesh) return;
 
             const target = CAR_CAMERA_MODES[currentCarCamIndex];
+            const camLerp = 1.0 - Math.exp(-10.0 * dt);
             
-            camState.curDist = THREE.MathUtils.lerp(camState.curDist, target.dist, 0.1);
-            camState.curHeight = THREE.MathUtils.lerp(camState.curHeight, target.height, 0.1);
+            camState.curDist = THREE.MathUtils.lerp(camState.curDist, target.dist, camLerp);
+            camState.curHeight = THREE.MathUtils.lerp(camState.curHeight, target.height, camLerp);
 
             const offsetX = Math.sin(camState.angleX) * camState.curDist * Math.cos(camState.angleY);
             const offsetZ = Math.cos(camState.angleX) * camState.curDist * Math.cos(camState.angleY);
             const offsetY = camState.curDist * Math.sin(camState.angleY);
 
+            _vCamPivot.set(carData.mesh.position.x, carData.mesh.position.y + 1.2, carData.mesh.position.z);
             _vTarget.set(carData.mesh.position.x + offsetX, carData.mesh.position.y + camState.curHeight + offsetY, carData.mesh.position.z + offsetZ);
             
-            camera.position.lerp(_vTarget, 0.2); 
-            
-            _vTemp1.set(carData.mesh.position.x, carData.mesh.position.y + 1.2, carData.mesh.position.z);
-            camera.lookAt(_vTemp1);
+            computeCollisionSafeCameraPosition(_vCamPivot, _vTarget);
+
+            camera.position.lerp(_vTarget, 1.0 - Math.exp(-12.0 * dt)); 
+            camera.lookAt(_vCamPivot);
         }
 
         function updateCinematicCamera(dt) {
-            if (characters.length < 2) return;
-            const p1 = characters[0].mesh.position;
-            const p2 = characters[1].mesh.position;
-            
-            _vMidPoint.addVectors(p1, p2).multiplyScalar(0.5);
+            if (characters.length === 0) return;
+            if (characters.length >= 2) {
+                const p1 = characters[0].mesh.position;
+                const p2 = characters[1].mesh.position;
+                _vMidPoint.addVectors(p1, p2).multiplyScalar(0.5);
+            } else {
+                _vMidPoint.copy(characters[0].mesh.position);
+            }
             const baseRot = characters[activeCharIndex].mesh.rotation.y;
             
             cinematicAngle += dt * 0.15; 
@@ -2261,7 +2599,7 @@
             _vTarget.copy(_vMidPoint).addScaledVector(_vForward, 4.5); 
             _vTarget.y += 1.5; 
             
-            camera.position.lerp(_vTarget, 0.05); 
+            camera.position.lerp(_vTarget, 1.0 - Math.exp(-4.0 * dt)); 
             
             _vTemp1.copy(_vMidPoint);
             _vTemp1.y += 1.0;
@@ -2313,23 +2651,19 @@
             if (isSwitching) {
                 handleCinematicSwitchCamera(realDt);
             } else if (carData.active) {
-                updateCarCamera(); 
+                updateCarCamera(realDt); 
             } else if (isCinematicMode && isEmoting) {
                 updateCinematicCamera(realDt);
             } else {
-                updateGameCamera(); 
+                updateGameCamera(realDt); 
             }
 
             updateAdaptivePerformance(realDt, now);
 
-            // Throttle DOM position text writes to prevent layout/GC spikes
             if (now - _lastDOMUpdate > 200) {
-                if (characters.length > 0) {
+                if (characters.length > 0 && posDisplayEl) {
                     const pos = characters[activeCharIndex].mesh.position;
-                    const posEl = document.getElementById('pos-display');
-                    if (posEl) {
-                        posEl.textContent = `${pos.x.toFixed(2)}, ${pos.y.toFixed(2)}, ${pos.z.toFixed(2)}`;
-                    }
+                    posDisplayEl.textContent = `${pos.x.toFixed(2)}, ${pos.y.toFixed(2)}, ${pos.z.toFixed(2)}`;
                 }
                 _lastDOMUpdate = now;
             }
